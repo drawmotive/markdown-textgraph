@@ -1,0 +1,4 @@
+.textgraph-preview { margin: 1em 0; }
+.textgraph-preview img { max-width: 100%; height: auto; }
+.textgraph-preview figcaption { font-size: 0.9em; color: var(--vscode-descriptionForeground); }
+.textgraph-preview[data-state=error] { border-left: 3px solid var(--vscode-editorError-foreground); padding-left: 1em; }

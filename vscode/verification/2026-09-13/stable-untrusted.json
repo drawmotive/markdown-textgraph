@@ -1,0 +1,17 @@
+{
+  "vscode": "1.137.0",
+  "node": "24.18.1",
+  "trust": false,
+  "checks": [
+    "untrusted workspace preserves source without rendering, including unsaved edits",
+    "strict built-in Webview CSP retained and data images permitted",
+    "ordinary headings, emphasis, link, list, JavaScript fence and local image",
+    "closing and reopening Markdown Preview remains functional"
+  ],
+  "extension": {
+    "id": "drawmotive.textgraph-markdown",
+    "version": "0.1.0",
+    "path": "/home/mason/worktree/vscode-textgraph-preview/integrations/markdown-textgraph/vscode/test-results/stable/untrusted/extensions/drawmotive.textgraph-markdown-0.1.0"
+  },
+  "csp": "default-src 'none'; img-src 'self' 'self' https://*.vscode-cdn.net https: data:; media-src 'self' 'self' https://*.vscode-cdn.net https: data:; script-src 'nonce-REDACTED'; style-src 'self' 'self' https://*.vscode-cdn.net 'unsafe-inline' https: data:; font-src 'self' 'self' https://*.vscode-cdn.net https: data:;"
+}

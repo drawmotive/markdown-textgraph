@@ -1,0 +1,76 @@
+{
+  "name": "textgraph-markdown",
+  "displayName": "TextGraph for Markdown Preview",
+  "description": "Live TextGraph diagrams in VS Code's built-in Markdown preview. Local rendering, automatic updates, and inline diagnostics.",
+  "version": "0.1.0",
+  "publisher": "drawmotive",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drawmotive/markdown-textgraph.git",
+    "directory": "vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/drawmotive/markdown-textgraph/issues"
+  },
+  "homepage": "https://github.com/drawmotive/markdown-textgraph/tree/main/vscode#readme",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.101.0",
+    "node": ">=22"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "textgraph",
+    "markdown",
+    "preview",
+    "diagram",
+    "flowchart"
+  ],
+  "main": "./dist/extension.cjs",
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "TextGraph source is shown as code until the workspace is trusted; the native renderer is not started."
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": [
+      "media/preview.css"
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "webpack --mode production",
+    "test": "node --test --test-concurrency=1 test/*.test.mjs",
+    "test:host": "node test/run-host.mjs",
+    "package": "vsce package --no-dependencies",
+    "publish:vsix": "vsce publish --packagePath textgraph-markdown-0.1.0.vsix"
+  },
+  "dependencies": {
+    "@drawmotive/textgraph": "0.1.0-alpha.1"
+  },
+  "devDependencies": {
+    "@vscode/test-electron": "^2.5.2",
+    "@vscode/vsce": "^3.9.2",
+    "copy-webpack-plugin": "^14.0.0",
+    "markdown-it": "^14.1.0",
+    "playwright": "^1.55.0",
+    "pngjs": "^7.0.0",
+    "webpack": "^5.101.3",
+    "webpack-cli": "^6.0.1"
+  }
+}

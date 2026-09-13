@@ -1,5 +1,7 @@
 # TextGraph for Markdown
 
+For VS Code’s built-in Markdown Preview, see the independent [TextGraph extension](vscode/README.md). Its VSIX bundles the public SDK and does not depend on this npm plugin being published.
+
 Render `textgraph` fenced code blocks as static PNG diagrams in markdown-it and VitePress. Rendering runs in a Node Worker through the public `@drawmotive/textgraph` package. Visitors receive images without downloading a diagram runtime.
 
 This package is prepared locally for its first release; npm publication is pending. The SDK dependency is the published `0.1.0-alpha.1`, pinned in the independent lockfile.
