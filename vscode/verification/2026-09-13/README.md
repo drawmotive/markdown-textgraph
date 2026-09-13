@@ -19,13 +19,15 @@ Minimum VS Code 1.101.0 has actual Extension Host Node 22.15.1. Current stable o
 - Restricted Mode shows escaped source, supports automatic updates, and produces no diagram images. Unit tests also prove no renderer call occurs before trust.
 - `npm audit` reports zero vulnerabilities after using current copy-webpack-plugin 14.
 
-The environment is Linux x64/WSL with WSLg. Its missing native-keymap dependency logs host keyboard-layout warnings; the real host and preview tests complete with exit code zero. Windows, macOS, SSH/container hosts, and browser-only hosts were not verified. The manifest does not advertise a browser entry point.
+The environment is Linux x64/WSL. Minimum-host tests used WSLg; the final stable tests used an isolated Xvfb display and downloaded system libraries without root installation. Initial WSLg runs logged missing native-keymap dependency warnings; all final host/preview suites complete with exit code zero. Windows, macOS, SSH/container hosts, and browser-only hosts were not verified. The manifest does not advertise a browser entry point.
 
 ## Upstream limitation
 
 Direct public SDK controls: `A -> B` succeeds (224×320 PNG), `A ->` returns `TG_PARSE_ERROR`. Both `A -> {}` and `A -> {{x}}` remain in native rendering past 10 seconds and require termination of the isolated probe process. In Node 22.14.0, terminating the Worker interrupts these cases in 12–130 ms; fresh Workers then render successfully.
 
 Causal boundary: unchanged Markdown fence content reaches the public SDK, where the malformed-input render fails to return. Cancellation belongs to the adapter’s execution boundary because the public SDK exposes no native cancellation contract. The generic deadline terminates the VM and reports an operational error; it neither diagnoses nor repairs syntax. The upstream SDK still needs a fix and public release. No copied parser or syntax-specific branch was introduced.
+
+Both installed Electron hosts were additionally tested with `A -> {}`. Here the SDK reaches a Mono lock-free allocator assertion before the deadline and returns `RUNTIME_FAILED`. The extension surfaces that operational failure, terminates the Worker, preserves the independent diagram, and successfully renders the next valid edit in a replacement Worker. This differs from the standalone timeout path but confirms both actual host versions survive and recover. An initial strict timeout-only assertion was corrected to allow the positively observed native failure; production behavior was unchanged. One earlier WSLg attempt lost the preview to unrelated window interaction; the final stable test used an isolated display.
 
 ## Marketplace status
 
