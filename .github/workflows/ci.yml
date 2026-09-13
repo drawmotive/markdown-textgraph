@@ -1,5 +1,7 @@
 name: Markdown plugin
-on: [push, pull_request, workflow_dispatch]
+on: [push, pull_request, workflow_dispatch, workflow_call]
+permissions:
+  contents: read
 jobs:
   test:
     strategy:
@@ -17,4 +19,9 @@ jobs:
       - run: npm run build
       - run: npm pack --dry-run --ignore-scripts
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:browser
+      - run: npm run test:browser -- --trace=retain-on-failure
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: markdown-browser-failures-node-${{ matrix.node }}
+          path: test-results/

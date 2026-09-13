@@ -1,0 +1,66 @@
+name: Publish Markdown npm package
+on:
+  push:
+    tags: ["markdown-v*"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: markdown-npm-publication
+  cancel-in-progress: false
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node tooling/npm-release.mjs check
+  test:
+    needs: resolve
+    uses: ./.github/workflows/ci.yml
+  pack:
+    needs: [resolve, test]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node tooling/npm-release.mjs pack
+      - uses: actions/upload-artifact@v4
+        with:
+          name: markdown-npm-release
+          path: |
+            .release/*.tgz
+            .release/npm-release.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: [resolve, pack]
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org/
+      - run: npm install --global npm@11.11.1
+      - uses: actions/download-artifact@v4
+        with:
+          name: markdown-npm-release
+          path: .release
+      # npm prefers OIDC. The optional token bootstraps the first publication
+      # before the package owner can configure its npm trusted publisher.
+      - name: Publish and verify the exact tested archive
+        run: node tooling/npm-release.mjs publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
