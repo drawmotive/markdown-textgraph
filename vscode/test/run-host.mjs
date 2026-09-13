@@ -43,7 +43,7 @@ for (const mode of modes) {
     'update.mode': 'none',
     'markdown.preview.security.level': 'strict',
   }, null, 2));
-  const [cli, ...cliArgs] = resolveCliArgsFromVSCodeExecutablePath(executable);
+  const [cli, ...cliArgs] = resolveCliArgsFromVSCodeExecutablePath(executable, { reuseMachineInstall: true });
   await command(cli, [...cliArgs, '--no-sandbox', '--user-data-dir', userData, '--extensions-dir', extensions, '--install-extension', vsix, '--force']);
   const port = await freePort();
   // test-electron's runTests always adds --disable-workspace-trust. Spawn the
@@ -79,7 +79,7 @@ async function freePort() {
 
 async function command(executablePath, args, environment = process.env) {
   await new Promise((resolve, reject) => {
-    const child = spawn(executablePath, args, { stdio: 'inherit', env: environment });
+    const child = spawn(executablePath, args, { stdio: 'inherit', env: environment, shell: process.platform === 'win32' });
     child.once('error', reject);
     child.once('exit', code => code === 0 ? resolve() : reject(new Error(`VS Code process exited ${code}`)));
   });
