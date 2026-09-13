@@ -79,15 +79,60 @@ async function freePort() {
 
 async function command(executablePath, args, environment = process.env) {
   await new Promise((resolve, reject) => {
-    const child = spawn(executablePath, args, { stdio: 'inherit', env: { ...environment, DONT_PROMPT_WSL_INSTALL: '1' }, shell: process.platform === 'win32' });
-    const timer = setTimeout(() => {
-      child.kill('SIGTERM');
-      reject(new Error('VS Code installation or host test exceeded five minutes'));
-    }, 300000);
-    child.once('error', error => { clearTimeout(timer); reject(error); });
-    child.once('exit', code => {
+    const windows = process.platform === 'win32';
+    const child = spawn(executablePath, args, {
+      stdio: 'inherit',
+      env: { ...environment, DONT_PROMPT_WSL_INSTALL: '1' },
+      shell: windows,
+      detached: !windows,
+    });
+    let stopping = false;
+    let finished = false;
+    const exited = new Promise(done => child.once('exit', done));
+    const cleanup = () => {
       clearTimeout(timer);
-      code === 0 ? resolve() : reject(new Error('VS Code process exited ' + code));
+      process.removeListener('SIGINT', interrupt);
+      process.removeListener('SIGTERM', interrupt);
+    };
+    const finish = error => {
+      if (finished) return;
+      finished = true;
+      cleanup();
+      error ? reject(error) : resolve();
+    };
+    const stop = async reason => {
+      if (stopping || finished) return;
+      stopping = true;
+      clearTimeout(timer);
+      // A VS Code launch owns several child processes. Kill the launch group,
+      // then await its leader, so failed tests cannot leave a hidden host alive.
+      try {
+        if (windows && child.pid) {
+          await new Promise(done => {
+            const killer = spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+            killer.once('error', done);
+            killer.once('exit', done);
+          });
+        } else if (child.pid) {
+          const signalGroup = signal => {
+            try { process.kill(-child.pid, signal); }
+            catch (error) { if (error.code !== 'ESRCH') throw error; }
+          };
+          signalGroup('SIGTERM');
+          await new Promise(done => setTimeout(done, 1500));
+          signalGroup('SIGKILL');
+        }
+        await Promise.race([exited, new Promise(done => setTimeout(done, 1500))]);
+        finish(new Error(reason));
+      } catch (error) { finish(new Error(reason, { cause: error })); }
+    };
+    const interrupt = () => { void stop('VS Code host test interrupted'); };
+    const timer = setTimeout(() => { void stop('VS Code installation or host test exceeded five minutes'); }, 300000);
+    process.on('SIGINT', interrupt);
+    process.on('SIGTERM', interrupt);
+    child.once('error', finish);
+    child.once('exit', code => {
+      if (!stopping) finish(code === 0 ? undefined : new Error('VS Code process exited ' + code));
     });
   });
 }
