@@ -1,13 +1,13 @@
-import { execFileSync } from 'node:child_process';
-import { readdirSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readdir } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-for (const entry of readdirSync('src', { recursive: true, withFileTypes: true })) {
-  if (entry.isFile() && entry.name.endsWith('.js')) {
-    execFileSync(process.execPath, ['--check', resolve(entry.parentPath, entry.name)], { stdio: 'inherit' });
-  }
+function run(args) {
+  const result = spawnSync(process.execPath, args, { stdio: "inherit" });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
 }
-
-execFileSync(process.execPath, [resolve('node_modules/typescript/bin/tsc'), '-p', 'tsconfig.json'], {
-  stdio: 'inherit',
-});
+for (const file of await readdir(new URL("../src/", import.meta.url), { recursive: true })) {
+  if (file.endsWith(".js")) run(["--check", fileURLToPath(new URL(`../src/${file}`, import.meta.url))]);
+}
+run([fileURLToPath(import.meta.resolve("typescript/bin/tsc")), "-p", "tsconfig.json"]);

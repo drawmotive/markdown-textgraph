@@ -4,3 +4,5 @@ node_modules/
 .vitepress/dist/
 test-results/
 playwright-report/
+.test-site-*/
+.browser-site-*/

@@ -31,7 +31,8 @@
   "scripts": {
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "build": "node tooling/check.mjs",
-    "prepack": "npm test && npm run build"
+    "prepack": "npm test && npm run build",
+    "test:browser": "playwright test"
   },
   "dependencies": {
     "@drawmotive/textgraph": "0.1.0-alpha.1"
@@ -46,12 +47,16 @@
     }
   },
   "devDependencies": {
-    "markdown-it": "14.1.0",
-    "vitepress": "2.0.0-alpha.19",
-    "typescript": "^5.9.3",
+    "@playwright/test": "^1.55.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.0.0",
+    "@types/react": "^19.3.0",
+    "markdown-it": "14.1.0",
     "pngjs": "^7.0.0",
-    "@playwright/test": "^1.55.0"
+    "preact": "^10.29.8",
+    "react": "^19.3.0",
+    "search-insights": "^2.17.3",
+    "typescript": "^5.9.3",
+    "vitepress": "2.0.0-alpha.19"
   }
 }

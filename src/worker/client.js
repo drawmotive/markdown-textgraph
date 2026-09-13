@@ -3,13 +3,17 @@ import { encodeLanguagePacks, restoreError } from "./protocol.js";
 
 /** One lazy Worker owns one SDK VM; configuration is fixed for the session. */
 export function createWorkerRenderer(options = {}) {
-  const workerData = { render: { ...options.render }, languagePacks: encodeLanguagePacks(options.languagePacks) };
-  return createWorkerClient(() => new Worker(new URL("./render.js", import.meta.url), {
-    workerData,
-    // This self-contained file Worker needs no host loaders or process-only flags.
-    // Explicitly forwarding process.execArgv also forwards flags Node rejects in Workers.
-    execArgv: [],
+  const render = Object.fromEntries(["scale", "padding", "maxWidth"].map(key => {
+    const value = options.render?.[key];
+    // Unknown fields stay outside RPC; invalid values remain invalid for the SDK.
+    return [key, value === undefined || typeof value === "number" ? value : null];
   }));
+  const workerData = { render, languagePacks: encodeLanguagePacks(options.languagePacks) };
+  // A module data URL accepts inherited --input-type flags from Node eval consumers.
+  // Let Node inherit supported flags itself; copying execArgv exposes process-only flags.
+  const entry = new URL("./render.js", import.meta.url).href;
+  const bootstrap = new URL(`data:text/javascript,${encodeURIComponent(`import ${JSON.stringify(entry)}`)}`);
+  return createWorkerClient(() => new Worker(bootstrap, { workerData }));
 }
 
 /** Transport boundary keeps accepted RPCs alive, and makes a failed VM terminal. */
