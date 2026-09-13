@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs/promises');
 const path = require('node:path');
+const { createHash } = require('node:crypto');
 const vscode = require('vscode');
 const { chromium } = require('playwright');
 const { PNG } = require('pngjs');
@@ -59,10 +60,11 @@ exports.run = async function run() {
       for (const label of ['RapidOne', 'RapidTwo', 'FinalNode']) {
         await replaceText(document, original.replace('A -> B', 'A -> ' + label));
       }
-      preview = await waitFor(preview, ({ old }) => {
-        const images = [...document.querySelectorAll('.textgraph-preview[data-state="ready"] img')];
-        return images.length === 2 && images[0].complete && images[0].naturalWidth > 0 && images[0].src !== old;
-      }, 'rapid edit recovery', 90000, { old: edited[0] });
+      preview = await waitFor(preview, ({ sourceHash }) => {
+        const containers = [...document.querySelectorAll('.textgraph-preview[data-state="ready"]')];
+        const image = containers[0]?.querySelector('img');
+        return containers.length === 2 && containers[0].dataset.source === sourceHash && image.complete && image.naturalWidth > 0;
+      }, 'rapid edit recovery', 90000, { sourceHash: createHash('sha256').update('A -> FinalNode\n').digest('hex') });
       const rapid = await getImages(preview);
       await replaceText(document, original.replace('A -> B', 'A ->'));
       preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview[data-state="error"]').length === 1 && document.querySelectorAll('.textgraph-preview[data-state="ready"] img').length === 1, 'invalid source diagnostics');
