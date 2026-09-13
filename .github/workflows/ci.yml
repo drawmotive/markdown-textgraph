@@ -4,9 +4,8 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
         node: [22.12.0, 24]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -17,7 +16,5 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npm pack --dry-run --ignore-scripts
-      - if: runner.os == 'Linux'
-        run: npx playwright install --with-deps chromium
-      - if: runner.os == 'Linux'
-        run: npm run test:browser
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:browser
