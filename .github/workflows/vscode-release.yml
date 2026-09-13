@@ -23,6 +23,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: vscode/package-lock.json
+      - run: npm run release:check
       - run: npm ci --workspaces=false
       - run: npm test
       - run: npm run package
@@ -56,6 +57,6 @@ jobs:
             exit 1
           fi
           npx vsce verify-pat drawmotive
-          npx vsce publish --packagePath *.vsix
+          npm run publish:vsix
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}

@@ -16,7 +16,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - run: npm pack --dry-run
+      - run: npm pack --dry-run --ignore-scripts
       - if: runner.os == 'Linux'
         run: npx playwright install --with-deps chromium
       - if: runner.os == 'Linux'

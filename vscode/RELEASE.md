@@ -1,10 +1,12 @@
 # Release process
 
+Release version/channel come from the superproject release.json, projected into .release/target.json. Do not bump this package independently. Run npm run release:check before packaging; unprepared dependencies block release. The current artifact remains historical until preparation succeeds.
+
 Extension: `drawmotive.textgraph-markdown`. Independently versioned in `vscode/package.json`; npm Markdown plugin publication is not required.
 
 ## Prepare and verify
 
-1. Update the manifest, lockfile, and changelog on a task branch. Use a numeric extension version.
+1. Update the superproject release.json, run release:sync, then prepare this component from its published public dependencies. Update the changelog on the task branch.
 2. In `vscode`, run `npm ci --workspaces=false`, `npm test`, and `npm run package`. Webpack copies the installed public npm SDK with its module/asset paths intact. No private build tooling runs.
 3. Run `npm run test:host` and `VSCODE_VERSION=stable npm run test:host`. Both install the VSIX into isolated extension directories. Linux CI uses Xvfb.
 4. Inspect `npx vsce ls --no-dependencies` and record the SHA-256. Publish the tested VSIX unchanged.
@@ -15,7 +17,7 @@ Use existing publisher **drawmotive**. A credential owner needs publisher access
 
 ```sh
 npx vsce verify-pat drawmotive
-npx vsce publish --packagePath textgraph-markdown-0.1.0.vsix
+npm run publish:vsix
 ```
 
 An authorized Azure CLI identity can instead use `--azure-credential`; authentication alone does not grant publisher permissions.

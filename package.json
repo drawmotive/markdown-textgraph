@@ -31,8 +31,9 @@
   "scripts": {
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "build": "node tooling/check.mjs",
-    "prepack": "npm test && npm run build",
-    "test:browser": "playwright test"
+    "prepack": "node .release/check.cjs --installed && npm test && npm run build",
+    "test:browser": "playwright test",
+    "release:check": "node .release/check.cjs --ready"
   },
   "dependencies": {
     "@drawmotive/textgraph": "0.1.0-alpha.1"

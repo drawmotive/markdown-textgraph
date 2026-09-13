@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "releaseVersion": "0.2.0",
+  "channel": "stable",
+  "name": "@drawmotive/markdown-it-textgraph",
+  "version": "0.2.0",
+  "dependencies": {
+    "@drawmotive/textgraph": "0.2.0"
+  },
+  "native": false,
+  "publishable": true
+}

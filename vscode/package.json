@@ -54,11 +54,12 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "webpack --mode production",
+    "build": "node .release/check.cjs --installed && webpack --mode production",
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "test:host": "node test/run-host.mjs",
-    "package": "vsce package --no-dependencies",
-    "publish:vsix": "vsce publish --packagePath textgraph-markdown-0.1.0.vsix"
+    "package": "node tooling/package.mjs",
+    "publish:vsix": "node tooling/publish.mjs",
+    "release:check": "node .release/check.cjs --ready"
   },
   "dependencies": {
     "@drawmotive/textgraph": "0.1.0-alpha.1"
@@ -71,6 +72,8 @@
     "playwright": "^1.55.0",
     "pngjs": "^7.0.0",
     "webpack": "^5.101.3",
-    "webpack-cli": "^6.0.1"
+    "webpack-cli": "^6.0.1",
+    "yauzl": "^3.4.0",
+    "yazl": "^3.3.1"
   }
 }

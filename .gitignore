@@ -6,3 +6,9 @@ test-results/
 playwright-report/
 .test-site-*/
 .browser-site-*/
+
+# Tracked release policy; generated archives/receipts remain ignored.
+.release/*
+!.release/
+!.release/target.json
+!.release/check.cjs

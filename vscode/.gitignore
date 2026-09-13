@@ -3,3 +3,10 @@ dist/
 *.vsix
 .vscode-test/
 test-results/
+
+# Tracked release policy; generated archives/receipts remain ignored.
+.release/*
+!.release/
+!.release/target.json
+!.release/check.cjs
+!.release/vsix.cjs
