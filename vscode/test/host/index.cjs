@@ -79,17 +79,18 @@ exports.run = async function run() {
       assert.equal(recovered[0], rapid[0], 'Rapid edits and recovery converge to final source image');
       evidence.checks.push('rapid edits converge and valid source recovers after diagnostics');
 
-      await replaceText(document, original.replace('A -> B', 'A -> {}'));
-      preview = await waitFor(preview, () => {
-        const failure = document.querySelector('.textgraph-preview[data-state="error"]');
-        const independent = document.querySelectorAll('.textgraph-preview[data-state="ready"] img');
-        return /TG_RENDER_TIMEOUT|RUNTIME_FAILED/.test(failure?.textContent || '') && independent.length === 1 && independent[0].complete && independent[0].naturalWidth > 0;
-      }, 'native SDK failure stays outside the Extension Host thread', 35000);
-      evidence.timeoutDiagnostic = await preview.locator('.textgraph-preview[data-state="error"]').textContent();
-      await replaceText(document, original.replace('A -> B', 'A -> AfterTimeout'));
-      preview = await waitFor(preview, imagesReady, 'replacement Worker renders after native failure', 35000);
-      verifyPngs(await getImages(preview));
-      evidence.checks.push('native SDK failure is reported without blocking independent diagram; replacement Worker recovers');
+      for (const source of ['A -> {}', 'A -> {{x}}']) {
+        await replaceText(document, original.replace('A -> B', source));
+        preview = await waitFor(preview, ({ sourceHash }) => {
+          const containers = [...document.querySelectorAll('.textgraph-preview[data-state="ready"]')];
+          return containers.length === 2 && containers[0].dataset.source === sourceHash
+            && containers.every(container => { const image = container.querySelector('img'); return image?.complete && image.naturalWidth > 0; });
+        }, 'inline group renders with the public SDK', 35000, { sourceHash: createHash('sha256').update(source + String.fromCharCode(10)).digest('hex') });
+        const groups = await getImages(preview);
+        verifyPngs(groups);
+        assert.equal(groups[1], initial[1], 'Group edits preserve the independent diagram');
+      }
+      evidence.checks.push('empty and nested inline group targets render successfully with public SDK 0.2.0');
 
       await replaceText(document, original.replace('A -> B', 'A ->\n<script>globalThis.__textgraphInjected = true</script>'));
       preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview[data-state="error"]').length === 1, 'HTML-looking invalid source');

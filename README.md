@@ -7,7 +7,7 @@ For VS Code’s built-in Markdown Preview, see the independent [TextGraph extens
 
 Render `textgraph` fenced code blocks as static PNG diagrams in markdown-it and VitePress. Rendering runs in a Node Worker through the public `@drawmotive/textgraph` package. Visitors receive images without downloading a diagram runtime.
 
-This package is prepared locally for its first release; npm publication is pending. The SDK dependency is the published `0.1.0-alpha.1`, pinned in the independent lockfile.
+Release `0.2.0` uses the published TextGraph SDK `0.2.0`, pinned in the independent lockfile.
 
 ## Requirements
 
@@ -17,7 +17,7 @@ This package is prepared locally for its first release; npm publication is pendi
 
 ## markdown-it
 
-Once published, install `@drawmotive/markdown-it-textgraph` and `markdown-it`. Before publication, install the tarball produced by `npm pack` instead.
+Install `@drawmotive/markdown-it-textgraph@0.2.0` and `markdown-it`.
 
 ```javascript
 import MarkdownIt from "markdown-it";
@@ -75,7 +75,7 @@ Structured positions are zero-based, with UTF-16 columns. Original-file location
 
 Custom fonts can be injected using the SDK public language-pack structure. The shared optional `@drawmotive/textgraph-fonts` package is not yet available on the public registry; it is not a required dependency.
 
-The pinned SDK has a known issue with closed brace-delimited connection targets such as `A -> {}`: native rendering can run away. This plugin does not provide cancellation of native work or rewrite diagram syntax. An upstream SDK release is needed to resolve that case.
+SDK `0.2.0` renders inline group targets such as `A -> {}` and `A -> {{x}}`. Unmatched closing braces return syntax diagnostics.
 
 ## Development
 

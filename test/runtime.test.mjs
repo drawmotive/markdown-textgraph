@@ -32,6 +32,22 @@ test("public SDK generates decoded nonempty PNGs in a reusable Worker", async ()
   } finally { await renderer.dispose(); }
 });
 
+test("public SDK renders inline group targets and recovers after invalid braces", { timeout: 30000 }, async () => {
+  const renderer = createWorkerRenderer();
+  try {
+    for (const source of ["A -> {}", "A -> {{x}}", "A -> { B -> C }"]) {
+      const result = await renderer.renderPng(source);
+      assert.equal(result.success, true, JSON.stringify(result.diagnostics));
+      const png = PNG.sync.read(Buffer.from(result.png, "base64"));
+      assert.ok(png.width > 0 && new Set(png.data).size > 2);
+    }
+    const invalid = await renderer.renderPng("A -> {}}");
+    assert.equal(invalid.success, false);
+    assert.ok(invalid.diagnostics.some(item => item.code === "TG_PARSE_ERROR"));
+    assert.equal((await renderer.renderPng("A -> {}")).success, true);
+  } finally { await renderer.dispose(); }
+});
+
 test("public SDK returns DSL diagnostics but rejects invalid operational render options", async () => {
   const renderer = createWorkerRenderer();
   try {

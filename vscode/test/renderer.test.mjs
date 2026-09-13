@@ -55,7 +55,7 @@ test('idle native VM is released and worker crashes reject the active request', 
   await r.dispose();
 });
 
-test('public npm SDK produces real PNGs; malformed native work is bounded and next source recovers', { timeout: 60000 }, async () => {
+test('public npm SDK renders inline groups and recovers after syntax diagnostics', { timeout: 60000 }, async () => {
   const r = new Renderer({ startWorker: () => new Worker(new URL('../src/render-worker.mjs', import.meta.url)), timeoutMs: 8000 });
   try {
     const first = await r.render('A -> B');
@@ -63,7 +63,13 @@ test('public npm SDK produces real PNGs; malformed native work is bounded and ne
     const image = PNG.sync.read(Buffer.from(first.png, 'base64'));
     assert.ok(image.width > 0 && new Set(image.data).size > 2);
     assert.equal((await r.render('A ->')).success, false);
-    await assert.rejects(r.render('A -> {}'), { code: 'TG_RENDER_TIMEOUT' });
+    for (const source of ['A -> {}', 'A -> {{x}}']) {
+      const group = await r.render(source);
+      assert.equal(group.success, true, JSON.stringify(group.diagnostics));
+      const png = PNG.sync.read(Buffer.from(group.png, 'base64'));
+      assert.ok(png.width > 0 && new Set(png.data).size > 2);
+    }
+    assert.equal((await r.render('A -> {}}')).success, false);
     const recovered = await r.render('C -> D');
     assert.equal(recovered.success, true);
     assert.notEqual(recovered.png, first.png);
