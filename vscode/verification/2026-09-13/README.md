@@ -29,8 +29,16 @@ Causal boundary: unchanged Markdown fence content reaches the public SDK, where 
 
 Both installed Electron hosts were additionally tested with `A -> {}`. Here the SDK reaches a Mono lock-free allocator assertion before the deadline and returns `RUNTIME_FAILED`. The extension surfaces that operational failure, terminates the Worker, preserves the independent diagram, and successfully renders the next valid edit in a replacement Worker. This differs from the standalone timeout path but confirms both actual host versions survive and recover. An initial strict timeout-only assertion was corrected to allow the positively observed native failure; production behavior was unchanged. One earlier WSLg attempt lost the preview to unrelated window interaction; the final stable test used an isolated display.
 
-## Marketplace status
+## Marketplace status before credential setup
 
 Existing publisher `drawmotive` is used by the public editor extension. No local VSCE PAT is configured. The Azure CLI identity is authenticated but `npx vsce verify-pat --azure-credential drawmotive` fails with Access Denied on publisher permission lookup. The separate vscode-drawmotive repository has a VSCE_PAT secret, which GitHub does not expose for reading or reuse; markdown-textgraph has no repository/environment secret. Organization secret visibility is unavailable.
 
 Missing publication condition: a Marketplace Manage credential authorized for publisher drawmotive (local VSCE_PAT or this repository’s Actions secret), or the appropriate publisher role for the Azure identity. No secret value was logged. The tested VSIX is installable; Marketplace publication is not complete. The release workflow and instructions are ready on the task branch. No push, merge, remote release, or branch cleanup was performed.
+
+## Credential setup and rebased source boundary
+
+The owner subsequently configured a PAT; `npx vsce verify-pat drawmotive` succeeded. Credentials no longer block publishing. Marketplace publication has not run.
+
+The candidate was repacked after removing an image URL that vsce rewrote to the wrong public repository directory and links to not-yet-pushed extension documentation. Only README and homepage metadata changed in the archive; production JS, Worker, SDK assets, CSS and icon remain byte-identical. All 11 tests and installed-VSIX trusted/untrusted checks on both 1.101.0 and 1.137.0 passed again using isolated Xvfb. SHA256SUMS and the JSON evidence refer to this repacked candidate.
+
+The superproject main now contains parser/group fixes, including 06cd98ed and subsequent inline-group work through b6fbbac0. The extension still bundles public npm `@drawmotive/textgraph@0.1.0-alpha.1`, which remains the registry latest/alpha. Rebasing private sources does not rebuild or upgrade that immutable public artifact. The known-SDK-failure checks remain applicable until a fixed SDK is published and the dependency is explicitly updated. No local SDK substitution or private native build is performed in this extension session.

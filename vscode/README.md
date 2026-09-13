@@ -12,8 +12,6 @@ Start -> Review -> Done
 
 Open a Markdown file, then run **Markdown: Open Preview to the Side** (`Ctrl+K V`, or `Cmd+K V` on macOS). The first diagram takes a few seconds to initialize.
 
-![TextGraph diagram preview](media/example.png)
-
 ## Requirements
 
 - VS Code **1.101.0 or newer**, desktop or a Node-based remote Extension Host. VS Code 1.101 introduced Node 22 in both desktop and remote hosts. A browser-only host such as vscode.dev without a remote host is unsupported.
@@ -54,4 +52,4 @@ npm run test:host
 
 The host test downloads VS Code 1.101.0, installs the actual VSIX into isolated profiles, and tests built-in Markdown Preview through the real Extension Host and webview. Linux CI uses `xvfb-run -a npm run test:host`; a desktop display also works. Set `VSCODE_VERSION=stable` for the current stable host. No C# project is built.
 
-See [release instructions](https://github.com/drawmotive/markdown-textgraph/blob/main/vscode/RELEASE.md) and [the SDK](https://github.com/drawmotive/textgraph).
+See [the project repository](https://github.com/drawmotive/markdown-textgraph) and [the SDK](https://github.com/drawmotive/textgraph).

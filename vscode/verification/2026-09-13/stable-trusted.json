@@ -16,7 +16,7 @@
   "extension": {
     "id": "drawmotive.textgraph-markdown",
     "version": "0.1.0",
-    "path": "/home/mason/worktree/vscode-textgraph-preview/integrations/markdown-textgraph/vscode/test-results/stable-final/trusted/extensions/drawmotive.textgraph-markdown-0.1.0"
+    "path": "/home/mason/worktree/vscode-textgraph-preview/integrations/markdown-textgraph/vscode/test-results/publication-stable/trusted/extensions/drawmotive.textgraph-markdown-0.1.0"
   },
   "diagnostic": "A ->\nTG_PARSE_ERROR: Expected identifier or anonymous node",
   "timeoutDiagnostic": "A -> {}\nRUNTIME_FAILED: PNG rendering could not execute",

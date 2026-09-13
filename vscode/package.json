@@ -13,7 +13,7 @@
   "bugs": {
     "url": "https://github.com/drawmotive/markdown-textgraph/issues"
   },
-  "homepage": "https://github.com/drawmotive/markdown-textgraph/tree/main/vscode#readme",
+  "homepage": "https://github.com/drawmotive/markdown-textgraph",
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.101.0",
