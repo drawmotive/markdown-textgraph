@@ -1,0 +1,6 @@
+node_modules/
+*.tgz
+.vitepress/cache/
+.vitepress/dist/
+test-results/
+playwright-report/
