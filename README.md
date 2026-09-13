@@ -73,7 +73,7 @@ Both factories accept:
 
 Structured positions are zero-based, with UTF-16 columns. Original-file locations are included only when the parser source can be matched to the supplied document. Frontmatter offsets are verified; included or custom-preprocessed text may have only block-local SDK positions. Error blocks escape source and messages, and disable Vue interpolation.
 
-Custom fonts can be injected using the SDK public language-pack structure. The separately planned `@drawmotive/textgraph-fonts-zh-cn` package is not yet available on the public registry; it is not a required dependency.
+Custom fonts can be injected using the SDK public language-pack structure. The shared optional `@drawmotive/textgraph-fonts` package is not yet available on the public registry; it is not a required dependency.
 
 The pinned SDK has a known issue with closed brace-delimited connection targets such as `A -> {}`: native rendering can run away. This plugin does not provide cancellation of native work or rewrite diagram syntax. An upstream SDK release is needed to resolve that case.
 
