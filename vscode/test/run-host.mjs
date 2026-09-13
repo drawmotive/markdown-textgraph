@@ -80,7 +80,14 @@ async function freePort() {
 async function command(executablePath, args, environment = process.env) {
   await new Promise((resolve, reject) => {
     const child = spawn(executablePath, args, { stdio: 'inherit', env: environment, shell: process.platform === 'win32' });
-    child.once('error', reject);
-    child.once('exit', code => code === 0 ? resolve() : reject(new Error(`VS Code process exited ${code}`)));
+    const timer = setTimeout(() => {
+      child.kill('SIGTERM');
+      reject(new Error('VS Code installation or host test exceeded five minutes'));
+    }, 300000);
+    child.once('error', error => { clearTimeout(timer); reject(error); });
+    child.once('exit', code => {
+      clearTimeout(timer);
+      code === 0 ? resolve() : reject(new Error('VS Code process exited ' + code));
+    });
   });
 }
