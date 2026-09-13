@@ -115,7 +115,7 @@ exports.run = async function run() {
     }
     throw error;
   } finally {
-    // Disconnecting the CDP client preserves test-electron's ownership of exit.
+    // Disconnect the CDP client; the extension test host owns product shutdown.
     await browser?.close();
   }
 };

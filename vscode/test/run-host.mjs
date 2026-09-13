@@ -5,7 +5,7 @@ import { createServer } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath, runTests } from '@vscode/test-electron';
+import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const version = process.env.VSCODE_VERSION || '1.101.0';
@@ -46,25 +46,25 @@ for (const mode of modes) {
   const [cli, ...cliArgs] = resolveCliArgsFromVSCodeExecutablePath(executable);
   await command(cli, [...cliArgs, '--no-sandbox', '--user-data-dir', userData, '--extensions-dir', extensions, '--install-extension', vsix, '--force']);
   const port = await freePort();
-  await runTests({
-    vscodeExecutablePath: executable,
-    extensionDevelopmentPath: path.join(root, 'test/host'),
-    extensionTestsPath: path.join(root, 'test/host/index.cjs'),
-    extensionTestsEnv: {
-      TEXTGRAPH_TEST_TRUST: mode,
-      TEXTGRAPH_TEST_WORKSPACE: workspace,
-      TEXTGRAPH_TEST_EXTENSIONS: extensions,
-      TEXTGRAPH_TEST_CDP: `http://127.0.0.1:${port}`,
-      TEXTGRAPH_TEST_ARTIFACTS: runRoot,
-      TEXTGRAPH_TEST_VSCODE: version,
-    },
-    launchArgs: [
-      workspace, '--user-data-dir', userData, '--extensions-dir', extensions,
-      '--no-sandbox', '--disable-gpu', '--skip-welcome', '--skip-release-notes',
-      '--disable-updates', '--use-inmemory-secretstorage',
-      `--remote-debugging-port=${port}`, '--remote-debugging-address=127.0.0.1',
-      ...(mode === 'trusted' ? ['--disable-workspace-trust'] : []),
-    ],
+  // test-electron's runTests always adds --disable-workspace-trust. Spawn the
+  // downloaded real product directly so the restricted profile is genuine.
+  await command(executable, [
+    workspace, '--user-data-dir', userData, '--extensions-dir', extensions,
+    '--extensionDevelopmentPath=' + path.join(root, 'test/host'),
+    '--extensionTestsPath=' + path.join(root, 'test/host/index.cjs'),
+    '--no-sandbox', '--disable-gpu', '--disable-gpu-sandbox',
+    '--skip-welcome', '--skip-release-notes', '--disable-updates',
+    '--use-inmemory-secretstorage',
+    '--remote-debugging-port=' + port, '--remote-debugging-address=127.0.0.1',
+    ...(mode === 'trusted' ? ['--disable-workspace-trust'] : []),
+  ], {
+    ...process.env,
+    TEXTGRAPH_TEST_TRUST: mode,
+    TEXTGRAPH_TEST_WORKSPACE: workspace,
+    TEXTGRAPH_TEST_EXTENSIONS: extensions,
+    TEXTGRAPH_TEST_CDP: 'http://127.0.0.1:' + port,
+    TEXTGRAPH_TEST_ARTIFACTS: runRoot,
+    TEXTGRAPH_TEST_VSCODE: version,
   });
 }
 console.log(`VSIX Markdown Preview checks passed. Evidence: ${artifactRoot}`);
@@ -77,10 +77,10 @@ async function freePort() {
   return port;
 }
 
-async function command(executablePath, args) {
+async function command(executablePath, args, environment = process.env) {
   await new Promise((resolve, reject) => {
-    const child = spawn(executablePath, args, { stdio: 'inherit', env: process.env });
+    const child = spawn(executablePath, args, { stdio: 'inherit', env: environment });
     child.once('error', reject);
-    child.once('exit', code => code === 0 ? resolve() : reject(new Error(`VSIX installation exited ${code}`)));
+    child.once('exit', code => code === 0 ? resolve() : reject(new Error(`VS Code process exited ${code}`)));
   });
 }
