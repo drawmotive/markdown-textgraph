@@ -7,6 +7,7 @@ import path from "node:path";
 import { createServer } from "node:net";
 import { renderPngFigure } from "../../src/html.js";
 import { PNG } from "pngjs";
+import { vitePressServerUrl } from "../support/vitepress-output.mjs";
 
 test("plain Markdown images fit narrow containers without distorting aspect ratio", async ({ page }) => {
   const png = new PNG({ width: 400, height: 200 });
@@ -41,14 +42,18 @@ async function fixture(base) {
   return root;
 }
 function launch(args) {
-  const child = spawn(process.execPath, [cli, ...args], { stdio: ["ignore", "pipe", "pipe"] });
+  const child = spawn(process.execPath, [cli, ...args], {
+    stdio: ["ignore", "pipe", "pipe"],
+    // Exercise CI URL formatting even when the local terminal disables color.
+    env: { ...process.env, NO_COLOR: undefined, FORCE_COLOR: "1" },
+  });
   let output = "";
   let url;
   const ready = new Promise((resolve, reject) => {
     const append = data => {
       output += data;
-      const match = output.match(new RegExp("http://(?:127[.]0[.]0[.]1|localhost):[0-9]+"));
-      if (match && !url) { url = match[0]; resolve(url); }
+      const address = vitePressServerUrl(output);
+      if (address && !url) { url = address; resolve(url); }
     };
     child.stdout.on("data", append);
     child.stderr.on("data", append);
@@ -66,25 +71,35 @@ async function stop(child) {
   await exited;
 }
 
-test("development updates PNGs and leaves errors inert without browser SDK requests", async ({ page }) => {
+test("development updates PNGs and leaves errors inert without browser SDK requests", async ({ page }, testInfo) => {
   const root = await fixture("/");
   const server = launch(["dev", root, "--host", "127.0.0.1", "--port", await availablePort()]);
   const requests = [];
   page.on("request", request => requests.push(request.url()));
   try {
-    const url = await server.ready;
-    await page.goto(url);
     const image = page.locator('.vp-doc img[alt="TextGraph diagram"]');
-    await expect(image).toBeVisible();
-    await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
-    const original = await image.getAttribute("src");
-    await writeFile(path.join(root, "index.md"), "# Changed\n\n```textgraph\nA -> C -> D\n```\n");
-    await expect.poll(() => image.getAttribute("src")).not.toBe(original);
-    await writeFile(path.join(root, "index.md"), "# Invalid\n\n```textgraph\nA: {{globalThis.__textgraphExecuted = true}} <script>oops</script>\nA ->\n```\n");
-    await expect(page.locator(".vp-doc")).toContainText("__textgraphExecuted");
-    expect(await page.evaluate(() => globalThis.__textgraphExecuted)).toBeUndefined();
-    expect(requests.filter(url => new RegExp("[.]wasm(?:$|[?])|dotnet[.]|src/worker/render").test(url))).toEqual([]);
-  } finally { await stop(server.child); await rm(root, { recursive: true, force: true }); }
+    await test.step("start VitePress and render the initial diagram", async () => {
+      const url = await server.ready;
+      await page.goto(url);
+      await expect(image).toBeVisible();
+      await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
+    });
+    await test.step("update the diagram through HMR", async () => {
+      const original = await image.getAttribute("src");
+      await writeFile(path.join(root, "index.md"), "# Changed\n\n```textgraph\nA -> C -> D\n```\n");
+      await expect.poll(() => image.getAttribute("src")).not.toBe(original);
+    });
+    await test.step("display invalid source without executing it", async () => {
+      await writeFile(path.join(root, "index.md"), "# Invalid\n\n```textgraph\nA: {{globalThis.__textgraphExecuted = true}} <script>oops</script>\nA ->\n```\n");
+      await expect(page.locator(".vp-doc")).toContainText("__textgraphExecuted");
+      expect(await page.evaluate(() => globalThis.__textgraphExecuted)).toBeUndefined();
+      expect(requests.filter(url => new RegExp("[.]wasm(?:$|[?])|dotnet[.]|src/worker/render").test(url))).toEqual([]);
+    });
+  } finally {
+    await testInfo.attach("vitepress-output", { body: server.output(), contentType: "text/plain" });
+    await test.step("stop the development server", () => stop(server.child));
+    await rm(root, { recursive: true, force: true });
+  }
 });
 
 for (const base of ["/", "/docs/"]) {
