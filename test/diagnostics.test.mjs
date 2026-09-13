@@ -91,6 +91,18 @@ test('does not map a diagnostic into the closing fence of an empty block', async
   await session.dispose();
 });
 
+test('does not map compact closed or unclosed empty fences', async () => {
+  for (const source of [fence + 'textgraph\n' + fence, fence + 'textgraph']) {
+    const reported = [];
+    const fake = failingRenderer([diagnostic()]);
+    const session = createMarkdownSession(fake.renderer, { onDiagnostic: value => reported.push(value) });
+    const md = new MarkdownIt().use(session.markdownIt);
+    await session.render(md, source);
+    assert.equal(reported[0].documentLocation, undefined);
+    await session.dispose();
+  }
+});
+
 test('omits document position when host preprocessing breaks source provenance', async () => {
   const reported = [];
   const fake = failingRenderer([diagnostic()]);
@@ -101,6 +113,37 @@ test('omits document position when host preprocessing breaks source provenance',
   await md.renderAsync('<!-- @include: ./diagram.md -->', { path: 'page.md' });
   assert.equal(reported[0].documentLocation, undefined);
   assert.equal(reported[0].file, 'page.md');
+  await session.dispose();
+});
+
+test('omits document position when an opaque host prepends parser input', async () => {
+  const reported = [];
+  const fake = failingRenderer([diagnostic()]);
+  const session = createMarkdownSession(fake.renderer, { onDiagnostic: value => reported.push(value) });
+  const md = new MarkdownIt();
+  md.renderAsync = async function renderAsync(source, env) {
+    return this.render('padding\n' + source, env);
+  };
+  md.use(session.markdownIt);
+  await md.renderAsync(fenced('A ->'), { path: 'page.md' });
+  assert.equal(reported[0].documentLocation, undefined);
+  await session.dispose();
+});
+
+test('omits document position when includes are present even if expanded bytes match', async () => {
+  const reported = [];
+  const fake = failingRenderer([diagnostic()]);
+  const session = createMarkdownSession(fake.renderer, { onDiagnostic: value => reported.push(value) });
+  const md = new MarkdownIt();
+  md.renderAsync = async function renderAsync(source, env) {
+    env.src = source;
+    env.content = source;
+    env.includes = ['/diagram.md'];
+    return this.render(source, env);
+  };
+  md.use(session.markdownIt);
+  await md.renderAsync(fenced('A ->'), { path: 'page.md' });
+  assert.equal(reported[0].documentLocation, undefined);
   await session.dispose();
 });
 
@@ -165,6 +208,19 @@ test('inline errors escape source, diagnostics, and attributes inside a v-pre re
   await session.dispose();
 });
 
+test('inserts dollar replacement patterns as literal escaped error content', async () => {
+  const replacementPatterns = 'cost $& | $' + String.fromCharCode(96) + " | $' | $$";
+  const fake = failingRenderer([diagnostic({ message: replacementPatterns })]);
+  const session = createMarkdownSession(fake.renderer);
+  const md = new MarkdownIt().use(session.markdownIt);
+  const html = await session.render(md, fenced(replacementPatterns));
+  const escaped = 'cost $&amp; | $' + String.fromCharCode(96) + ' | $&#39; | $$';
+  assert.equal(html.includes('<code>' + escaped + '\n</code>'), true);
+  assert.equal(html.includes('>' + escaped + '</li>'), true);
+  assert.doesNotMatch(html, /textgraph-placeholder/);
+  await session.dispose();
+});
+
 test('throw mode rejects ordinary diagram failures with file, block, and diagnostics', async () => {
   const parseError = diagnostic({ code: 'TG_PARSE_ERROR', message: 'Expected node' });
   const fake = failingRenderer([parseError]);
@@ -177,6 +233,20 @@ test('throw mode rejects ordinary diagram failures with file, block, and diagnos
     assert.deepEqual(error.diagnostics, [parseError]);
     return true;
   });
+  await session.dispose();
+});
+
+test('throw mode reports every duplicate block before throwing the first build error', async () => {
+  const reported = [];
+  const fake = failingRenderer([diagnostic()]);
+  const session = createMarkdownSession(fake.renderer, {
+    errorMode: 'throw',
+    onDiagnostic: value => reported.push(value),
+  });
+  const md = new MarkdownIt().use(session.markdownIt);
+  await assert.rejects(session.render(md, fenced('A ->') + '\n\n' + fenced('A ->')));
+  assert.deepEqual(fake.calls, ['A ->\n']);
+  assert.deepEqual(reported.map(item => item.blockIndex), [0, 1]);
   await session.dispose();
 });
 

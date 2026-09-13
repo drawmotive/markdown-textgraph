@@ -14,7 +14,20 @@ export function createFenceRule(originalFence, getContext) {
 
     const blockIndex = context.tasks.length;
     const marker = '<!-- textgraph-placeholder:' + context.marker + ':' + blockIndex + ' -->';
-    context.tasks.push({ blockIndex, marker, source: token.content, map: token.map });
+    context.tasks.push({
+      blockIndex,
+      marker,
+      source: token.content,
+      map: token.map,
+      parserSource: context.parserSource,
+    });
     return marker;
+  };
+}
+
+export function createSourceCaptureRule(getContext) {
+  return function captureTextGraphParserSource(state) {
+    const context = getContext(state.env);
+    if (context) context.parserSource = state.src;
   };
 }

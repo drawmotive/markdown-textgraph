@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { createBuildError, createMarkdownDiagnostic } from './diagnostics.js';
-import { createFenceRule } from './fence.js';
+import { createFenceRule, createSourceCaptureRule } from './fence.js';
 import { renderErrorFigure, renderPngFigure } from './html.js';
 
 const INSTALLATION = Symbol.for('@drawmotive/markdown-it-textgraph/installation');
@@ -50,19 +50,21 @@ export function createMarkdownSession(renderer, options = {}) {
       const firstFailure = settled.find(result => result.status === 'rejected');
       if (firstFailure) throw firstFailure.reason;
       const results = new Map(entries.map(([source], index) => [source, settled[index].value]));
+      let buildError;
       for (const task of context.tasks) {
         const result = results.get(task.source);
         for (const diagnostic of result.diagnostics ?? []) {
           options.onDiagnostic?.(createMarkdownDiagnostic(task, diagnostic, documentSource, env));
         }
         if (!result.success && options.errorMode === 'throw') {
-          throw createBuildError(task, result.diagnostics ?? [], documentSource, env);
+          buildError ??= createBuildError(task, result.diagnostics ?? [], documentSource, env);
         }
         const replacement = result.success
           ? renderPngFigure(result)
           : renderErrorFigure(task.source, result.diagnostics ?? []);
-        html = html.replace(task.marker, replacement);
+        html = html.replace(task.marker, () => replacement);
       }
+      if (buildError) throw buildError;
       return html;
     } finally {
       delete env[CONTEXT];
@@ -78,6 +80,7 @@ export function createMarkdownSession(renderer, options = {}) {
     // The first session installed on a parser owns its fence and async-render
     // wrappers. Replacing either would mix task contexts between sessions.
     const originalFence = md.renderer.rules.fence.bind(md.renderer.rules);
+    md.core.ruler.after('block', 'textgraph_source_context', createSourceCaptureRule(env => env?.[CONTEXT]));
     md.renderer.rules.fence = createFenceRule(originalFence, env => env?.[CONTEXT]);
     md[INSTALLATION] = session;
     installed.add(md);

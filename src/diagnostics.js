@@ -2,7 +2,12 @@ function splitLines(source) {
   return source.split(/\r?\n/);
 }
 
+function normalizeMarkdownSource(source) {
+  return source.replace(/\r\n?|\n/g, '\n');
+}
+
 function resolveSourceContext(documentSource, env) {
+  if (Array.isArray(env.includes) && env.includes.length > 0) return undefined;
   const parsedSource = typeof env.content === 'string' ? env.content : documentSource;
   const expandedSource = typeof env.src === 'string' ? env.src : documentSource;
   if (expandedSource !== documentSource || !documentSource.endsWith(parsedSource)) {
@@ -19,7 +24,10 @@ export function mapDiagnostic(task, diagnostic, documentSource, env = {}) {
   }
 
   const sourceContext = resolveSourceContext(documentSource, env);
-  if (!sourceContext) return undefined;
+  if (!sourceContext || task.parserSource !== normalizeMarkdownSource(sourceContext.parsedSource) ||
+      task.source === '') {
+    return undefined;
+  }
   const blockLines = splitLines(task.source);
   const blockLine = blockLines[location.line];
   const parsedLine = task.map[0] + 1 + location.line;
