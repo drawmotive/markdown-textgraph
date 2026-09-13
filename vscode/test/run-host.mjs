@@ -79,7 +79,7 @@ async function freePort() {
 
 async function command(executablePath, args, environment = process.env) {
   await new Promise((resolve, reject) => {
-    const child = spawn(executablePath, args, { stdio: 'inherit', env: environment, shell: process.platform === 'win32' });
+    const child = spawn(executablePath, args, { stdio: 'inherit', env: { ...environment, DONT_PROMPT_WSL_INSTALL: '1' }, shell: process.platform === 'win32' });
     const timer = setTimeout(() => {
       child.kill('SIGTERM');
       reject(new Error('VS Code installation or host test exceeded five minutes'));
