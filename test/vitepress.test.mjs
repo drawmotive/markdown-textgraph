@@ -3,9 +3,11 @@ import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { createServer } from "vite";
 import test from "node:test";
 import MarkdownIt from "markdown-it";
 import { withTextGraph } from "../src/vitepress.js";
+import { createMarkdownRenderer, disposeMdItInstance } from "vitepress";
 
 test("VitePress adapter preserves user configuration and awaits existing Markdown hooks", async () => {
   const calls = [];
@@ -57,6 +59,28 @@ test("server close disposes session and original site hook failures survive clea
   await plugin.closeServer({ reason: "close" });
   await assert.rejects(md.renderAsync("plain", {}), /disposed/);
   await assert.rejects(config.buildEnd({}), /user hook/);
+});
+
+test("actual Vite middleware server shutdown disposes the Markdown session", async () => {
+  const config = withTextGraph({});
+  const md = new MarkdownIt();
+  md.renderAsync = async (source, env) => md.render(source, env);
+  await config.markdown.config(md);
+  const server = await createServer({ configFile: false, server: { middlewareMode: true }, plugins: config.vite.plugins });
+  try {
+    await md.renderAsync("```textgraph\nA -> B\n```", {});
+    await server.close();
+    await assert.rejects(md.renderAsync("plain", {}), /disposed/);
+  } finally { await server.close(); }
+});
+
+test("development can recover after host frontmatter errors", async () => {
+  const config = withTextGraph({});
+  const md = await createMarkdownRenderer(process.cwd(), config.markdown);
+  try {
+    await assert.rejects(md.renderAsync("---\ntitle: [broken\n---\nhello", {}), /YAML|flow collection|unexpected end/i);
+    assert.ok((await md.renderAsync("corrected plain Markdown", {})).includes("corrected plain Markdown"));
+  } finally { await config.buildEnd({}); await disposeMdItInstance(); }
 });
 
 async function buildFixture(t, { source, options = {}, base = "/", include } = {}) {

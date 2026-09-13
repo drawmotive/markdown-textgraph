@@ -6,6 +6,12 @@ import { renderErrorFigure, renderPngFigure } from './html.js';
 const INSTALLATION = Symbol.for('@drawmotive/markdown-it-textgraph/installation');
 const RENDER_WRAPPER = Symbol.for('@drawmotive/markdown-it-textgraph/render-wrapper');
 const CONTEXT = Symbol('@drawmotive/markdown-it-textgraph/context');
+const renderFailures = new WeakSet();
+
+/** Internal host seam: only failures after host parsing belong to this adapter. */
+export function isTextGraphRenderFailure(error) {
+  return error !== null && (typeof error === 'object' || typeof error === 'function') && renderFailures.has(error);
+}
 
 export function createMarkdownSession(renderer, options = {}) {
   let state = 'active';
@@ -34,8 +40,10 @@ export function createMarkdownSession(renderer, options = {}) {
     }
     const context = { marker: randomUUID(), tasks: [] };
     Object.defineProperty(env, CONTEXT, { configurable: true, value: context });
+    let hostCompleted = false;
     try {
       let html = await hostRender();
+      hostCompleted = true;
       if (context.tasks.length === 0) return html;
       const renders = new Map();
       for (const task of context.tasks) {
@@ -66,6 +74,13 @@ export function createMarkdownSession(renderer, options = {}) {
       }
       if (buildError) throw buildError;
       return html;
+    } catch (error) {
+      if (hostCompleted) {
+        const failure = error instanceof Object ? error : new Error(String(error));
+        renderFailures.add(failure);
+        throw failure;
+      }
+      throw error;
     } finally {
       delete env[CONTEXT];
     }

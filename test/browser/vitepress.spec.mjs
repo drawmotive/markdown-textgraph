@@ -5,6 +5,20 @@ import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { createServer } from "node:net";
+import { renderPngFigure } from "../../src/html.js";
+import { PNG } from "pngjs";
+
+test("plain Markdown images fit narrow containers without distorting aspect ratio", async ({ page }) => {
+  const png = new PNG({ width: 400, height: 200 });
+  png.data.fill(255);
+  const figure = renderPngFigure({ png: PNG.sync.write(png).toString("base64"), width: 400, height: 200 });
+  await page.setContent(`<div style="width:180px">${figure}</div>`);
+  const image = page.locator("img");
+  await expect(image).toBeVisible();
+  const bounds = await image.boundingBox();
+  expect(bounds.width).toBeLessThanOrEqual(180);
+  expect(bounds.width / bounds.height).toBeCloseTo(2);
+});
 
 async function availablePort() {
   const server = createServer();

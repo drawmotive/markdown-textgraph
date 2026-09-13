@@ -1,4 +1,5 @@
 import { createTextGraphMarkdown } from "./index.js";
+import { isTextGraphRenderFailure } from "./markdown.js";
 
 /** Compose host hooks without taking ownership of VitePress parsing or page transforms. */
 export function withTextGraph(config = {}, options = {}) {
@@ -29,7 +30,11 @@ export function withTextGraph(config = {}, options = {}) {
           const renderAsync = md.renderAsync.bind(md);
           md.renderAsync = async (...args) => {
             try { return await renderAsync(...args); }
-            catch (error) { return cleanupFailure(error); }
+            catch (error) {
+              if (isTextGraphRenderFailure(error)) return cleanupFailure(error);
+              // A corrected frontmatter/include/highlighter error can render again in dev.
+              throw error;
+            }
           };
         } catch (error) { return cleanupFailure(error); }
       },
@@ -45,9 +50,11 @@ export function withTextGraph(config = {}, options = {}) {
           async buildEnd(error) {
             if (error) { try { await dispose(); } catch { /* Preserve the build error. */ } }
           },
-          // Successful bundles precede SSR/search; only failures are terminal here.
+          // Vite 8.2 closes dev environments here (closeServer arrived in 8.3).
+          // Successful production bundles still precede SSR/search.
           async closeBundle(error) {
-            if (error) { try { await dispose(); } catch { /* Preserve the build error. */ } }
+            if (command === "serve") await dispose();
+            else if (error) { try { await dispose(); } catch { /* Preserve the build error. */ } }
           },
         },
       ],

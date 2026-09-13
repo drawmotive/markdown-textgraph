@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -20,7 +20,7 @@ async function command(args, cwd) {
   return output;
 }
 
-test("packed public entry installs with registry SDK and typechecks without VitePress", { timeout: 90000 }, async t => {
+test("packed public entries install with registry SDK, core types and a VitePress build", { timeout: 90000 }, async t => {
   const temp = await mkdtemp(path.join(tmpdir(), "markdown-textgraph-consumer-"));
   t.after(() => rm(temp, { recursive: true, force: true }));
   const output = await command([npmCli, "pack", "--ignore-scripts", "--workspaces=false", "--json", "--pack-destination", temp], root);
@@ -42,4 +42,11 @@ test("packed public entry installs with registry SDK and typechecks without Vite
   await command([require.resolve("typescript/bin/tsc"), "--noEmit", "--strict", "--module", "NodeNext", "--moduleResolution", "NodeNext", "--target", "ES2022", "consumer.ts"], temp);
   await writeFile(path.join(temp, "render.mjs"), String.raw`import MarkdownIt from "markdown-it"; import { createTextGraphMarkdown } from "@drawmotive/markdown-it-textgraph"; const md=new MarkdownIt(); const s=createTextGraphMarkdown(); md.use(s.markdownIt); try { const html=await s.render(md, "~~~textgraph\nA -> B\n~~~"); if(!html.includes("data:image/png;base64,")) throw new Error(html); console.log("registry PNG rendered"); } finally { await s.dispose(); }`);
   assert.match(await command([path.join(temp, "render.mjs")], temp), /registry PNG rendered/);
+  await command([npmCli, "install", "--ignore-scripts", "--registry=https://registry.npmjs.org", "--no-audit", "--no-fund", "vitepress@2.0.0-alpha.19"], temp);
+  await mkdir(path.join(temp, ".vitepress"));
+  await writeFile(path.join(temp, ".vitepress/config.mjs"), `import {withTextGraph} from "@drawmotive/markdown-it-textgraph/vitepress"; export default withTextGraph({});`);
+  await writeFile(path.join(temp, "index.md"), "# Packed plugin\n\n~~~textgraph\nA -> B\n~~~");
+  await command([path.join(path.dirname(require.resolve("vitepress/package.json")), "bin/vitepress.js"), "build", temp], temp);
+  const html = await readFile(path.join(temp, ".vitepress/dist/index.html"), "utf8");
+  assert.ok(html.includes("data:image/png;base64,"));
 });
