@@ -31,8 +31,6 @@ exports.run = async function run() {
     await vscode.commands.executeCommand('markdown.showPreviewToSide', uri);
     preview = await findPreview(browser);
     preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview').length === 2, 'two TextGraph fences');
-    await verifyOrdinaryMarkdown(preview);
-    evidence.checks.push('ordinary headings, emphasis, link, list, JavaScript fence and local image');
     if (!expectedTrust) {
       preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview[data-state="untrusted"]').length === 2, 'restricted mode source fallback');
       assert.equal(await preview.locator('.textgraph-preview img').count(), 0);
@@ -95,6 +93,7 @@ exports.run = async function run() {
     evidence.csp = csp.replace(/nonce-[^']+/g, 'nonce-REDACTED');
     evidence.checks.push('strict built-in Webview CSP retained and data images permitted');
     await verifyOrdinaryMarkdown(preview);
+    evidence.checks.push('ordinary headings, emphasis, link, list, JavaScript fence and local image');
     await preview.page().screenshot({ path: path.join(artifacts, 'markdown-preview.png') });
     await replaceText(document, original);
     await document.save();
