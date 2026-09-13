@@ -36,6 +36,7 @@ for (const mode of modes) {
     'security.workspace.trust.emptyWindow': false,
     'workbench.startupEditor': 'none',
     'workbench.tips.enabled': false,
+    'git.openRepositoryInParentFolders': 'never',
     'window.restoreWindows': 'none',
     'extensions.autoUpdate': false,
     'extensions.autoCheckUpdates': false,

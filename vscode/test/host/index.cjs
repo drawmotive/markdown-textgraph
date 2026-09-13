@@ -79,6 +79,18 @@ exports.run = async function run() {
       assert.equal(recovered[0], rapid[0], 'Rapid edits and recovery converge to final source image');
       evidence.checks.push('rapid edits converge and valid source recovers after diagnostics');
 
+      await replaceText(document, original.replace('A -> B', 'A -> {}'));
+      preview = await waitFor(preview, () => {
+        const failure = document.querySelector('.textgraph-preview[data-state="error"]');
+        const independent = document.querySelectorAll('.textgraph-preview[data-state="ready"] img');
+        return failure?.textContent.includes('TG_RENDER_TIMEOUT') && independent.length === 1 && independent[0].complete && independent[0].naturalWidth > 0;
+      }, 'native SDK hang is terminated outside the Extension Host thread', 35000);
+      evidence.timeoutDiagnostic = await preview.locator('.textgraph-preview[data-state="error"]').textContent();
+      await replaceText(document, original.replace('A -> B', 'A -> AfterTimeout'));
+      preview = await waitFor(preview, imagesReady, 'replacement Worker renders after native timeout', 35000);
+      verifyPngs(await getImages(preview));
+      evidence.checks.push('native SDK hang reports TG_RENDER_TIMEOUT without blocking independent diagram; replacement Worker recovers');
+
       await replaceText(document, original.replace('A -> B', 'A ->\n<script>globalThis.__textgraphInjected = true</script>'));
       preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview[data-state="error"]').length === 1, 'HTML-looking invalid source');
       assert.equal(await preview.evaluate(() => globalThis.__textgraphInjected), undefined);
