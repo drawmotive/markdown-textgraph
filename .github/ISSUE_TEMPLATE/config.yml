@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report all TextGraph issues
+    url: https://github.com/drawmotive/textgraph/issues
+    about: Report bugs, request features, or ask questions here, including Markdown, VitePress, and VS Code issues.

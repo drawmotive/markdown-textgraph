@@ -5,6 +5,10 @@
   "description": "TextGraph diagrams for Markdown and VitePress",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://textgraph.dev/integrations/markdown",
+  "bugs": {
+    "url": "https://github.com/drawmotive/textgraph/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/drawmotive/markdown-textgraph.git"

@@ -1,5 +1,8 @@
 # TextGraph for Markdown Preview
 
+> **[Report all TextGraph issues on GitHub →](https://github.com/drawmotive/textgraph/issues)**
+> Use this shared tracker for extension bugs, rendering problems, feature requests, and documentation issues.
+
 Render `textgraph` fenced code blocks as diagrams in VS Code’s built-in Markdown preview. Diagrams update automatically as you edit, including unsaved changes. Multiple diagrams, ordinary Markdown, and inline errors work together.
 
 ````markdown
