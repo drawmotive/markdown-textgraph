@@ -12,3 +12,6 @@ playwright-report/
 !.release/
 !.release/target.json
 !.release/check.cjs
+
+# Local development uses a node_modules directory link.
+node_modules
