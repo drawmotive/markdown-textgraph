@@ -15,13 +15,13 @@ test('HTML preserves logical size when raster width is clamped', async () => {
   } finally { await session.dispose(); }
 });
 
-test('HTML displays legacy SDK pixels at the requested web density', async () => {
+test('HTML defaults to scale one when legacy SDK results omit logical dimensions', async () => {
   const fake = createRenderer(() => ({ success: true, png: 'cG5n', width: 800, height: 400, diagnostics: [] }));
   const session = createMarkdownSession(fake.renderer);
   const md = new MarkdownIt().use(session.markdownIt);
   try {
     const html = await session.render(md, '~~~textgraph\nA -> B\n~~~');
-    assert.match(html, /width="400" height="200"/);
+    assert.match(html, /width="800" height="400"/);
   } finally { await session.dispose(); }
 });
 

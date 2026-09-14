@@ -85,7 +85,7 @@ test("development updates external PNGs under a nested base without browser SDK 
       await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
       await expect(image).toHaveAttribute("src", /^\/docs\/assets\/textgraph-[a-f0-9]{20}\.png$/);
       const sizes = await image.evaluate(node => ({ pixels: node.naturalWidth, css: node.getBoundingClientRect().width }));
-      expect(sizes.pixels / sizes.css).toBeCloseTo(2);
+      expect(sizes.pixels / sizes.css).toBeCloseTo(1);
     });
     await test.step("update the diagram through HMR", async () => {
       const original = await image.getAttribute("src");

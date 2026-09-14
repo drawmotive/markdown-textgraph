@@ -32,6 +32,25 @@ test("public SDK generates decoded nonempty PNGs in a reusable Worker", async ()
   } finally { await renderer.dispose(); }
 });
 
+test("Worker defaults match explicit scale one and preserve explicit higher density", async () => {
+  const defaults = createWorkerRenderer();
+  const single = createWorkerRenderer({ render: { scale: 1 } });
+  const double = createWorkerRenderer({ render: { scale: 2 } });
+  try {
+    const actual = await defaults.renderPng("A -> B");
+    const expected = await single.renderPng("A -> B");
+    const dense = await double.renderPng("A -> B");
+    assert.equal(actual.success, true);
+    assert.equal(expected.success, true);
+    assert.equal(dense.success, true);
+    assert.equal(actual.png, expected.png);
+    assert.equal(dense.width, actual.width * 2);
+    assert.equal(dense.height, actual.height * 2);
+  } finally {
+    await defaults.dispose(); await single.dispose(); await double.dispose();
+  }
+});
+
 test("public SDK renders inline group targets and recovers after invalid braces", { timeout: 30000 }, async () => {
   const renderer = createWorkerRenderer();
   try {

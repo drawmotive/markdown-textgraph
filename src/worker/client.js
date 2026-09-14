@@ -5,7 +5,7 @@ import { encodeLanguagePacks, restoreError } from "./protocol.js";
 export function createWorkerRenderer(options = {}) {
   const render = Object.fromEntries(["scale", "padding", "maxWidth"].map(key => {
     const supplied = options.render?.[key];
-    const value = supplied === undefined && key === "scale" ? 2 : supplied;
+    const value = supplied === undefined && key === "scale" ? 1 : supplied;
     // Unknown fields stay outside RPC; invalid values remain invalid for the SDK.
     return [key, value === undefined || typeof value === "number" ? value : null];
   }));

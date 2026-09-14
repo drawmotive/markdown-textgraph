@@ -8,7 +8,7 @@ export function escapeHtml(value) {
 }
 
 /** Density affects sharpness; native display dimensions retain size after a raster cap. */
-export function renderPngFigure(result, { scale = 2, src = 'data:image/png;base64,' + result.png } = {}) {
+export function renderPngFigure(result, { scale = 1, src = 'data:image/png;base64,' + result.png } = {}) {
   const displayWidth = result.displayWidth ?? result.width / scale;
   const displayHeight = result.displayHeight ?? result.height / scale;
   const width = Number.isFinite(displayWidth) ? ' width="' + escapeHtml(displayWidth) + '"' : '';

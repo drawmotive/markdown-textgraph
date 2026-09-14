@@ -68,7 +68,7 @@ Files are named `textgraph-<hash>.png`, using the first 20 hexadecimal character
 
 Both factories accept:
 
-- `render`: SDK `scale`, `padding` and `maxWidth` options. Web rendering defaults to scale `2` for sharpness, while images display at logical diagram dimensions and shrink to fit their container. `scale` controls raster density; it does not enlarge the diagram.
+- `render`: SDK `scale`, `padding` and `maxWidth` options. Web rendering defaults to scale `1`; images display at logical diagram dimensions and shrink to fit their container. Set `scale: 2` explicitly for higher raster density. `scale` controls raster density; it does not enlarge the diagram.
 - `languagePacks`: SDK language packs containing font URLs or byte arrays and optional fallback families. Inputs are copied when the session is created.
 - `errorMode`: `inline` or `throw`. Plain markdown-it defaults to `inline`.
 - `onDiagnostic`: receives `{ file?, blockIndex, diagnostic, documentLocation? }`, including warnings from successful diagrams.

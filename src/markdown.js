@@ -69,7 +69,7 @@ export function createMarkdownSession(renderer, options = {}, imageSource) {
           buildError ??= createBuildError(task, result.diagnostics ?? [], documentSource, env);
         }
         const replacement = result.success
-          ? renderPngFigure(result, { scale: options.render?.scale ?? 2, src: imageSource?.(result) })
+          ? renderPngFigure(result, { scale: options.render?.scale ?? 1, src: imageSource?.(result) })
           : renderErrorFigure(task.source, result.diagnostics ?? []);
         html = html.replace(task.marker, () => replacement);
       }
