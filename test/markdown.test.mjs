@@ -4,6 +4,27 @@ import MarkdownIt from 'markdown-it';
 import { createMarkdownSession } from '../src/markdown.js';
 import { createRenderer, deferred } from './support/renderer.mjs';
 
+test('HTML preserves logical size when raster width is clamped', async () => {
+  const fake = createRenderer(() => ({ success: true, png: 'cG5n', width: 200, height: 100,
+    displayWidth: 800, displayHeight: 400, diagnostics: [] }));
+  const session = createMarkdownSession(fake.renderer, { render: { scale: 2 } });
+  const md = new MarkdownIt().use(session.markdownIt);
+  try {
+    const html = await session.render(md, '~~~textgraph\nA -> B\n~~~');
+    assert.match(html, /width="800" height="400"/);
+  } finally { await session.dispose(); }
+});
+
+test('HTML displays legacy SDK pixels at the requested web density', async () => {
+  const fake = createRenderer(() => ({ success: true, png: 'cG5n', width: 800, height: 400, diagnostics: [] }));
+  const session = createMarkdownSession(fake.renderer);
+  const md = new MarkdownIt().use(session.markdownIt);
+  try {
+    const html = await session.render(md, '~~~textgraph\nA -> B\n~~~');
+    assert.match(html, /width="400" height="200"/);
+  } finally { await session.dispose(); }
+});
+
 test('async render resolves TextGraph blocks while sync render delegates every fence', async () => {
   const fake = createRenderer();
   const session = createMarkdownSession(fake.renderer);

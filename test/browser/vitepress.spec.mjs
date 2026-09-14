@@ -71,8 +71,8 @@ async function stop(child) {
   await exited;
 }
 
-test("development updates PNGs and leaves errors inert without browser SDK requests", async ({ page }, testInfo) => {
-  const root = await fixture("/");
+test("development updates external PNGs under a nested base without browser SDK requests", async ({ page }, testInfo) => {
+  const root = await fixture("/docs/");
   const server = launch(["dev", root, "--host", "127.0.0.1", "--port", await availablePort()]);
   const requests = [];
   page.on("request", request => requests.push(request.url()));
@@ -80,14 +80,18 @@ test("development updates PNGs and leaves errors inert without browser SDK reque
     const image = page.locator('.vp-doc img[alt="TextGraph diagram"]');
     await test.step("start VitePress and render the initial diagram", async () => {
       const url = await server.ready;
-      await page.goto(url);
+      await page.goto(url + "/docs/");
       await expect(image).toBeVisible();
       await expect.poll(() => image.evaluate(node => node.naturalWidth)).toBeGreaterThan(0);
+      await expect(image).toHaveAttribute("src", /^\/docs\/assets\/textgraph-[a-f0-9]{20}\.png$/);
+      const sizes = await image.evaluate(node => ({ pixels: node.naturalWidth, css: node.getBoundingClientRect().width }));
+      expect(sizes.pixels / sizes.css).toBeCloseTo(2);
     });
     await test.step("update the diagram through HMR", async () => {
       const original = await image.getAttribute("src");
       await writeFile(path.join(root, "index.md"), "# Changed\n\n```textgraph\nA -> C -> D\n```\n");
       await expect.poll(() => image.getAttribute("src")).not.toBe(original);
+      await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
     });
     await test.step("display invalid source without executing it", async () => {
       await writeFile(path.join(root, "index.md"), "# Invalid\n\n```textgraph\nA: {{globalThis.__textgraphExecuted = true}} <script>oops</script>\nA ->\n```\n");
@@ -118,6 +122,7 @@ for (const base of ["/", "/docs/"]) {
       const image = page.locator('.vp-doc img[alt="TextGraph diagram"]');
       await expect(image).toBeVisible();
       await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+      await expect(image).toHaveAttribute("src", new RegExp("^" + base + "assets/textgraph-[a-f0-9]{20}[.]png$"));
     } finally {
       await context.close();
       if (server) await stop(server.child);

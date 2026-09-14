@@ -1,20 +1,25 @@
-import { createTextGraphMarkdown } from "./index.js";
-import { isTextGraphRenderFailure } from "./markdown.js";
+import { createMarkdownSession, isTextGraphRenderFailure } from "./markdown.js";
+import { createWorkerRenderer } from "./worker/client.js";
+import { createPngAssets } from "./vitepress-assets.js";
 
 /** Compose host hooks without taking ownership of VitePress parsing or page transforms. */
 export function withTextGraph(config = {}, options = {}) {
   let command = "serve";
   let session;
   let closed = false;
+  const assets = createPngAssets(config);
   const getSession = () => {
     if (closed) throw new Error("TextGraph VitePress session is closed");
-    return session ??= createTextGraphMarkdown({
+    return session ??= createMarkdownSession(createWorkerRenderer(options), {
       ...options,
       // VitePress creates Markdown before our configResolved hook chooses the command.
       get errorMode() { return options.errorMode ?? (command === "build" ? "throw" : "inline"); },
-    });
+    }, result => assets.add(result));
   };
-  const dispose = () => { closed = true; return session?.dispose() ?? Promise.resolve(); };
+  const dispose = async () => {
+    closed = true;
+    try { await session?.dispose(); } finally { assets.clear(); }
+  };
   const cleanupFailure = async error => {
     try { await dispose(); } catch { /* Preserve the original host/SDK failure. */ }
     throw error;
@@ -45,7 +50,15 @@ export function withTextGraph(config = {}, options = {}) {
         ...(config.vite?.plugins ?? []),
         {
           name: "textgraph-markdown",
-          configResolved(resolved) { command = resolved.command; },
+          enforce: "pre",
+          resolveId: assets.resolveId,
+          load: assets.load,
+          configResolved(resolved) {
+            command = resolved.command;
+            assets.setBase(resolved.base ?? config.base ?? "/");
+          },
+          configureServer(server) { server.middlewares.use(assets.middleware); },
+          generateBundle() { assets.emit(this); },
           async closeServer() { await dispose(); },
           async buildEnd(error) {
             if (error) { try { await dispose(); } catch { /* Preserve the build error. */ } }
@@ -60,7 +73,11 @@ export function withTextGraph(config = {}, options = {}) {
       ],
     },
     async buildEnd(...args) {
-      try { await config.buildEnd?.(...args); }
+      // SSR and local search may render diagrams after the client bundle finishes.
+      try {
+        await assets.write(args[0]?.outDir);
+        await config.buildEnd?.(...args);
+      }
       finally { await dispose(); }
     },
   };

@@ -13,7 +13,8 @@ export function isTextGraphRenderFailure(error) {
   return error !== null && (typeof error === 'object' || typeof error === 'function') && renderFailures.has(error);
 }
 
-export function createMarkdownSession(renderer, options = {}) {
+// Hosts may own asset URLs; plain Markdown remains a self-contained document.
+export function createMarkdownSession(renderer, options = {}, imageSource) {
   let state = 'active';
   let activeWork = 0;
   let drainResolve;
@@ -68,7 +69,7 @@ export function createMarkdownSession(renderer, options = {}) {
           buildError ??= createBuildError(task, result.diagnostics ?? [], documentSource, env);
         }
         const replacement = result.success
-          ? renderPngFigure(result)
+          ? renderPngFigure(result, { scale: options.render?.scale ?? 2, src: imageSource?.(result) })
           : renderErrorFigure(task.source, result.diagnostics ?? []);
         html = html.replace(task.marker, () => replacement);
       }

@@ -13,6 +13,7 @@ export interface MarkdownDiagnostic {
 }
 
 export interface TextGraphMarkdownOptions {
+  /** Web scale defaults to 2 for sharpness; display size uses logical diagram dimensions. */
   render?: Pick<TextGraphRenderPngOptions, 'scale' | 'padding' | 'maxWidth'>;
   languagePacks?: readonly TextGraphLanguagePack[];
   errorMode?: 'inline' | 'throw';

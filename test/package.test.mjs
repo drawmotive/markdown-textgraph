@@ -48,5 +48,5 @@ test("packed public entries install with registry SDK, core types and a VitePres
   await writeFile(path.join(temp, "index.md"), "# Packed plugin\n\n~~~textgraph\nA -> B\n~~~");
   await command([path.join(path.dirname(require.resolve("vitepress/package.json")), "bin/vitepress.js"), "build", temp], temp);
   const html = await readFile(path.join(temp, ".vitepress/dist/index.html"), "utf8");
-  assert.ok(html.includes("data:image/png;base64,"));
+  assert.match(html, /src="\/assets\/textgraph-[a-f0-9]{20}\.png"/);
 });

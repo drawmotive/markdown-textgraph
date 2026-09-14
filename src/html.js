@@ -7,10 +7,13 @@ export function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-export function renderPngFigure(result) {
-  const width = Number.isFinite(result.width) ? ' width="' + escapeHtml(result.width) + '"' : '';
-  const height = Number.isFinite(result.height) ? ' height="' + escapeHtml(result.height) + '"' : '';
-  return '<figure v-pre class="textgraph"><img style="max-width:100%;height:auto" src="data:image/png;base64,' + escapeHtml(result.png) + '" alt="TextGraph diagram"' + width + height + '></figure>';
+/** Density affects sharpness; native display dimensions retain size after a raster cap. */
+export function renderPngFigure(result, { scale = 2, src = 'data:image/png;base64,' + result.png } = {}) {
+  const displayWidth = result.displayWidth ?? result.width / scale;
+  const displayHeight = result.displayHeight ?? result.height / scale;
+  const width = Number.isFinite(displayWidth) ? ' width="' + escapeHtml(displayWidth) + '"' : '';
+  const height = Number.isFinite(displayHeight) ? ' height="' + escapeHtml(displayHeight) + '"' : '';
+  return '<figure v-pre class="textgraph"><img style="max-width:100%;height:auto" src="' + escapeHtml(src) + '" alt="TextGraph diagram"' + width + height + '></figure>';
 }
 
 export function renderErrorFigure(source, diagnostics) {

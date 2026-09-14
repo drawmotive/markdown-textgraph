@@ -13,7 +13,7 @@ Release `0.2.0` uses the published TextGraph SDK `0.2.0`, pinned in the independ
 
 - Node.js 22.12.0 or later.
 - markdown-it 14.x; VitePress support is tested against 2.0.0-alpha.19.
-- A content security policy permitting `img-src data:`. Images are embedded as data URLs, which increases page size.
+- Plain markdown-it embeds images and needs a content security policy permitting `img-src data:`. VitePress uses independent images served by the site and can use `img-src 'self'`.
 
 ## markdown-it
 
@@ -60,18 +60,22 @@ A -> B
 
 The adapter preserves existing Markdown hooks, includes, asynchronous highlighting, search and build hooks. Development displays invalid diagrams inline; production builds fail on invalid diagrams by default. Use `{ errorMode: "inline" }` as the second argument to opt into visible error blocks for a site containing draft syntax. SDK or Worker failures always reject rendering.
 
-The example can run with `npx vitepress dev examples/vitepress` or `npx vitepress build examples/vitepress`. No browser runtime or external PNG directory is needed for either `/` or a nested base path.
+The example can run with `npx vitepress dev examples/vitepress` or `npx vitepress build examples/vitepress`. VitePress serves independent PNGs during development and writes them to its build assets directory. URLs respect the configured `base` and `assetsDir`; no browser runtime or manually managed image directory is needed.
+
+Files are named `textgraph-<hash>.png`, using the first 20 hexadecimal characters of the final PNG's SHA-256. Identical PNGs share one file across pages, and changed pixels or rendering metadata produce a new URL. Generated files belong to the build output, not the Markdown source tree. Plain markdown-it keeps base64 images for self-contained HTML.
 
 ## Options and diagnostics
 
 Both factories accept:
 
-- `render`: SDK `scale`, `padding` and `maxWidth` options.
+- `render`: SDK `scale`, `padding` and `maxWidth` options. Web rendering defaults to scale `2` for sharpness, while images display at logical diagram dimensions and shrink to fit their container. `scale` controls raster density; it does not enlarge the diagram.
 - `languagePacks`: SDK language packs containing font URLs or byte arrays and optional fallback families. Inputs are copied when the session is created.
 - `errorMode`: `inline` or `throw`. Plain markdown-it defaults to `inline`.
 - `onDiagnostic`: receives `{ file?, blockIndex, diagnostic, documentLocation? }`, including warnings from successful diagrams.
 
 Structured positions are zero-based, with UTF-16 columns. Original-file locations are included only when the parser source can be matched to the supplied document. Frontmatter offsets are verified; included or custom-preprocessed text may have only block-local SDK positions. Error blocks escape source and messages, and disable Vue interpolation.
+
+New SDK runtimes return logical display dimensions even when `maxWidth` caps raster resolution. SDK `0.2.0` lacks that metadata: the adapter divides pixel dimensions by the requested scale, so a clamped image also displays smaller with that older SDK. DPI metadata does not control HTML image size.
 
 Custom fonts can be injected using the SDK public language-pack structure. The shared optional `@drawmotive/textgraph-fonts` package is not yet available on the public registry; it is not a required dependency.
 

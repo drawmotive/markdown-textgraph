@@ -4,7 +4,8 @@ import { encodeLanguagePacks, restoreError } from "./protocol.js";
 /** One lazy Worker owns one SDK VM; configuration is fixed for the session. */
 export function createWorkerRenderer(options = {}) {
   const render = Object.fromEntries(["scale", "padding", "maxWidth"].map(key => {
-    const value = options.render?.[key];
+    const supplied = options.render?.[key];
+    const value = supplied === undefined && key === "scale" ? 2 : supplied;
     // Unknown fields stay outside RPC; invalid values remain invalid for the SDK.
     return [key, value === undefined || typeof value === "number" ? value : null];
   }));

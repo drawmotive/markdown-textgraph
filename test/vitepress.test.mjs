@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, writeFile, rm } from "node:fs/promises";
+import { createHash } from "node:crypto";
+import { PNG } from "pngjs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -25,7 +27,7 @@ test("VitePress adapter preserves user configuration and awaits existing Markdow
   await config.markdown.config(md);
   const env = {};
   const html = await md.renderAsync("```textgraph\nA -> B\n```", env);
-  assert.ok(html.includes("data:image/png;base64,"));
+  assert.match(html, /src="\/docs\/assets\/textgraph-[a-f0-9]{20}\.png"/);
   assert.equal(renders, 1);
   assert.equal(env.retained, true);
   assert.equal(config.base, "/docs/");
@@ -83,13 +85,14 @@ test("development can recover after host frontmatter errors", async () => {
   } finally { await config.buildEnd({}); await disposeMdItInstance(); }
 });
 
-async function buildFixture(t, { source, options = {}, base = "/", include } = {}) {
+async function buildFixture(t, { source, options = {}, base = "/", include, assetsDir = "assets" } = {}) {
   const root = await mkdtemp(path.join(path.resolve(import.meta.dirname, ".."), ".test-site-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   await mkdir(path.join(root, ".vitepress"));
   const adapter = new URL("../src/vitepress.js", import.meta.url).href;
-  await writeFile(path.join(root, ".vitepress/config.mjs"), `import { withTextGraph } from ${JSON.stringify(adapter)}; export default withTextGraph({base:${JSON.stringify(base)},srcExclude:["included.md"],themeConfig:{search:{provider:"local"}}},${JSON.stringify(options)});`);
+  await writeFile(path.join(root, ".vitepress/config.mjs"), `import { withTextGraph } from ${JSON.stringify(adapter)}; export default withTextGraph({base:${JSON.stringify(base)},assetsDir:${JSON.stringify(assetsDir)},srcExclude:["included.md"],themeConfig:{search:{provider:"local"}}},${JSON.stringify(options)});`);
   await writeFile(path.join(root, "index.md"), source);
+  await writeFile(path.join(root, "duplicate.md"), "# Duplicate\n\n~~~textgraph\nA -> B\n~~~\n");
   if (include) await writeFile(path.join(root, "included.md"), include);
   const cli = fileURLToPath(new URL("bin/vitepress.js", import.meta.resolve("vitepress/package.json")));
   const child = spawn(process.execPath, [cli, "build", root], { stdio: ["ignore", "pipe", "pipe"] });
@@ -106,7 +109,19 @@ for (const base of ["/", "/docs/"]) {
     const result = await buildFixture(t, { base, source: "---\ntitle: Diagrams\n---\n# Diagrams\n\n```textgraph\nA -> B\n```\n\n> ~~~textgraph\n> C -> D\n> ~~~\n\n```js\nconst original = true\n```\n\n<!-- @include: ./included.md -->", include: "```textgraph\nE -> F\n```" });
     assert.equal(result.code, 0, result.output);
     const html = await readFile(path.join(result.root, ".vitepress/dist/index.html"), "utf8");
-    assert.equal(html.split("data:image/png;base64,").length - 1, 3);
+    assert.ok(!html.includes("data:image/png;base64,"));
+    const images = [...html.matchAll(/<img[^>]*src="([^"]*textgraph-[a-f0-9]{20}\.png)"[^>]*>/g)];
+    assert.equal(images.length, 3);
+    for (const [, url] of images) {
+      assert.ok(url.startsWith(base + "assets/"), url);
+      const bytes = await readFile(path.join(result.root, ".vitepress/dist", url.slice(base.length)));
+      const digest = createHash("sha256").update(bytes).digest("hex").slice(0, 20);
+      assert.ok(url.endsWith(`textgraph-${digest}.png`));
+      assert.ok(PNG.sync.read(bytes).width > 0);
+    }
+    const duplicate = await readFile(path.join(result.root, ".vitepress/dist/duplicate.html"), "utf8");
+    assert.ok(duplicate.includes(images[0][1]));
+    assert.equal((await readdir(path.join(result.root, ".vitepress/dist/assets"))).filter(name => name.startsWith("textgraph-")).length, 3);
     assert.match(html, /const/);
     assert.doesNotMatch(html, /textgraph-placeholder|textgraph-marker/);
   });
@@ -122,4 +137,13 @@ test("bad DSL fails builds by default and explicit inline mode safely displays i
   const html = await readFile(path.join(inline.root, ".vitepress/dist/index.html"), "utf8");
   assert.match(html, /missing.call/);
   assert.ok(!html.includes("<script>oops</script>"));
+});
+
+test("VitePress writes images into the configured assets directory", async t => {
+  const result = await buildFixture(t, { source: "# Diagram\n\n~~~textgraph\nA -> B\n~~~", base: "/docs/", assetsDir: "media/diagrams" });
+  assert.equal(result.code, 0, result.output);
+  const html = await readFile(path.join(result.root, ".vitepress/dist/index.html"), "utf8");
+  const url = html.match(/src="(\/docs\/media\/diagrams\/textgraph-[a-f0-9]{20}\.png)"/)?.[1];
+  assert.ok(url);
+  assert.ok((await readFile(path.join(result.root, ".vitepress/dist", url.slice(6)))).length > 0);
 });
