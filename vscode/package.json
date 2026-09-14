@@ -59,7 +59,9 @@
     "test:host": "node test/run-host.mjs",
     "package": "node tooling/package.mjs",
     "publish:vsix": "node tooling/publish.mjs",
-    "release:check": "node .release/check.cjs --ready"
+    "release:check": "node .release/check.cjs --ready",
+    "build:dev": "node tooling/development.mjs build",
+    "package:dev": "node tooling/development.mjs package"
   },
   "dependencies": {
     "@drawmotive/textgraph": "0.2.0"

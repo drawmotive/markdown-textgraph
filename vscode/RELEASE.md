@@ -35,3 +35,33 @@ If publisher access is unavailable, deliver the tested VSIX and checksum; do not
 - [VS Code 1.101 release notes](https://code.visualstudio.com/updates/v1_101): Node 22.15.1, Electron 35, and Node 22 in remote hosts establish the minimum for SDK `node >=22`.
 
 The existing async markdown-it/VitePress adapter awaits diagrams. This synchronous adapter returns placeholders/cache results and refreshes after completion; the adapters intentionally own different lifecycles.
+
+## Local development
+
+Use the superproject development command to rebuild native code and select the
+local SDK before building this extension. It provides the temporary dependency
+links and these absolute paths:
+
+- `DRAWMOTIVE_TEXTGRAPH_SDK`: the local SDK source package.
+- `DRAWMOTIVE_TEXTGRAPH_RUNTIME`: one generated native runtime directory.
+- `DRAWMOTIVE_DEV_OUTPUT`: an output directory inside ignored `.local`.
+
+`npm run build:dev` writes a runnable extension to `$DRAWMOTIVE_DEV_OUTPUT/extension`.
+`npm run package:dev` also writes `textgraph-markdown-<version>-development.vsix`
+in that output directory. It validates SDK resolution, the native development
+marker, every asset hash, and the selected fonts before packaging. Public npm
+dependency versions and lockfiles stay unchanged. Both channels use the same
+webpack extension build.
+
+The development VSIX contains the selected SDK, runtime, and fonts. Install it
+manually with **Extensions: Install from VSIX**; no development environment
+variables are required in the installed extension. It uses the normal extension
+identity and therefore replaces another installed version of this extension.
+For an isolated automated installation, set `TEXTGRAPH_VSIX` to its absolute path
+and run `npm run test:host`, then `VSCODE_VERSION=stable npm run test:host`. Linux
+headless runs require Xvfb.
+
+The archive and its display name identify it as a development build. The staged
+manifest is private and has no publication scripts. Development commands do not
+change the existing `build`, `package`, or publication release gates; use the
+normal release workflow to produce a distributable artifact.
