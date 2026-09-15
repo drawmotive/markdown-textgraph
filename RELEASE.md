@@ -2,11 +2,13 @@
 
 Publish only through `.github/workflows/release.yml` in GitHub Actions. The workflow uses Ubuntu, runs the Node 22.12/24 and browser checks, retains a single tarball and SHA-512 receipt, then publishes those exact bytes with provenance. The generated `.release/target.json` owns the coordinated version.
 
-Create `markdown-v0.2.0` on the verified main commit and push that tag to start publication. Manual dispatch must select the same release tag; dispatching from main is rejected. Retry a failed publication job with its retained artifact. An identical already-published version is verified without another upload.
+The next coordinated target is `0.2.1`. Keep the current package and lock at `0.2.0` until public TextGraph SDK `0.2.1` is available and superproject `npm run release:prepare -- markdown` succeeds. Then finalize the pending changelog entry and run the package checks.
+
+After verification and authorized integration, create `markdown-v0.2.1` on the verified main commit and push that tag to start publication. Manual dispatch must select the same release tag; dispatching from main is rejected. Retry a failed publication job with its retained artifact. An identical already-published version is verified without another upload.
 
 ## First publication credentials
 
-The package does not exist on npm yet. Configure an npm publishing credential with access to the `@drawmotive` scope as the `NPM_TOKEN` GitHub Actions secret in `drawmotive/markdown-textgraph`, preferably in the `npm` environment. No local npm login or local publication is required. The credential must satisfy npm automation and 2FA requirements.
+Version `0.2.0` is already published. The bootstrap instructions below apply only to a package that has not yet been published: configure an npm publishing credential with access to the `@drawmotive` scope as the `NPM_TOKEN` GitHub Actions secret in `drawmotive/markdown-textgraph`, preferably in the `npm` environment. No local npm login or local publication is required. The credential must satisfy npm automation and 2FA requirements.
 
 After the first publication, configure this npm trusted publisher:
 
