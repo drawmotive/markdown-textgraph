@@ -90,7 +90,7 @@ exports.run = async function run() {
         verifyPngs(groups);
         assert.equal(groups[1], initial[1], 'Group edits preserve the independent diagram');
       }
-      evidence.checks.push('empty and nested inline group targets render successfully with public SDK 0.2.0');
+      evidence.checks.push('empty and nested inline group targets render successfully with the bundled public SDK');
 
       await replaceText(document, original.replace('A -> B', 'A ->\n<script>globalThis.__textgraphInjected = true</script>'));
       preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview[data-state="error"]').length === 1, 'HTML-looking invalid source');

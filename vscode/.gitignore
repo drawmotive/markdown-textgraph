@@ -3,6 +3,7 @@ dist/
 *.vsix
 .vscode-test/
 test-results/
+.local/
 
 # Tracked release policy; generated archives/receipts remain ignored.
 .release/*

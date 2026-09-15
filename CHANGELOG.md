@@ -1,10 +1,10 @@
 # Changelog
 
-## Unreleased — 0.2.1 target
+## 0.2.1
 
 - Default Markdown and VitePress PNG rendering to scale 1, matching the SDK; explicit higher scales remain supported.
 - Emit content-addressed VitePress PNG assets and use logical display dimensions when the SDK provides them.
-- Release preparation remains pending public TextGraph SDK 0.2.1.
+- Use the exact public TextGraph SDK 0.2.1 dependency.
 
 ## 0.2.0
 

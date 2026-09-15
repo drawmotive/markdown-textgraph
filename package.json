@@ -1,6 +1,6 @@
 {
   "name": "@drawmotive/markdown-it-textgraph",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/",
@@ -44,7 +44,7 @@
     "release:check": "node .release/check.cjs --ready"
   },
   "dependencies": {
-    "@drawmotive/textgraph": "0.2.0"
+    "@drawmotive/textgraph": "0.2.1"
   },
   "peerDependencies": {
     "markdown-it": "^14.1.0",

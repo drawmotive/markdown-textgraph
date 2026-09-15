@@ -7,7 +7,7 @@ For VS Code’s built-in Markdown Preview, see the independent [TextGraph extens
 
 Render `textgraph` fenced code blocks as static PNG diagrams in markdown-it and VitePress. Rendering runs in a Node Worker through the public `@drawmotive/textgraph` package. Visitors receive images without downloading a diagram runtime.
 
-Release `0.2.0` uses the published TextGraph SDK `0.2.0`, pinned in the independent lockfile.
+Release `0.2.1` uses the published TextGraph SDK `0.2.1`, pinned in the independent lockfile.
 
 ## Requirements
 
@@ -17,7 +17,7 @@ Release `0.2.0` uses the published TextGraph SDK `0.2.0`, pinned in the independ
 
 ## markdown-it
 
-Install `@drawmotive/markdown-it-textgraph@0.2.0` and `markdown-it`.
+Install `@drawmotive/markdown-it-textgraph@0.2.1` and `markdown-it`.
 
 ```javascript
 import MarkdownIt from "markdown-it";
@@ -75,7 +75,7 @@ Both factories accept:
 
 Structured positions are zero-based, with UTF-16 columns. Original-file locations are included only when the parser source can be matched to the supplied document. Frontmatter offsets are verified; included or custom-preprocessed text may have only block-local SDK positions. Error blocks escape source and messages, and disable Vue interpolation.
 
-New SDK runtimes return logical display dimensions even when `maxWidth` caps raster resolution. SDK `0.2.0` lacks that metadata: the adapter divides pixel dimensions by the requested scale, so a clamped image also displays smaller with that older SDK. DPI metadata does not control HTML image size.
+SDK `0.2.1` returns logical display dimensions even when `maxWidth` caps raster resolution. SDK `0.2.0` lacks that metadata: the adapter divides pixel dimensions by the requested scale, so a clamped image also displays smaller with that older SDK. DPI metadata does not control HTML image size.
 
 Custom fonts can be injected using the SDK public language-pack structure. The shared optional `@drawmotive/textgraph-fonts` package is not yet available on the public registry; it is not a required dependency.
 

@@ -2,7 +2,7 @@
 
 Publish only through `.github/workflows/release.yml` in GitHub Actions. The workflow uses Ubuntu, runs the Node 22.12/24 and browser checks, retains a single tarball and SHA-512 receipt, then publishes those exact bytes with provenance. The generated `.release/target.json` owns the coordinated version.
 
-The next coordinated target is `0.2.1`. Keep the current package and lock at `0.2.0` until public TextGraph SDK `0.2.1` is available and superproject `npm run release:prepare -- markdown` succeeds. Then finalize the pending changelog entry and run the package checks.
+The coordinated target is `0.2.1`. Prepare package and lock metadata from public TextGraph SDK `0.2.1` with superproject `npm run release:prepare -- markdown`, finalize the changelog, and run the package checks. Never substitute a local SDK for the public dependency.
 
 After verification and authorized integration, create `markdown-v0.2.1` on the verified main commit and push that tag to start publication. Manual dispatch must select the same release tag; dispatching from main is rejected. Retry a failed publication job with its retained artifact. An identical already-published version is verified without another upload.
 

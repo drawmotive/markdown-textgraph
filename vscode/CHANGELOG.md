@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Bundle public TextGraph SDK 0.2.1 with scale-one PNG defaults and logical display dimensions.
+- Retain local Markdown Preview rendering, inline diagnostics, and Restricted Mode support.
+
 ## 0.2.0
 
 - Bundle public TextGraph SDK 0.2.0 with inline-group rendering and parser recovery fixes.

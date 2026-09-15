@@ -2,7 +2,7 @@
 
 Release version/channel come from the superproject release.json, projected into .release/target.json. Do not bump this package independently. Run npm run release:check before packaging; unprepared dependencies block release. The current artifact remains historical until preparation succeeds.
 
-Extension: `drawmotive.textgraph-markdown`. Its version in `vscode/package.json` follows the coordinated target. Preparation requires public TextGraph SDK `0.2.1`; npm Markdown plugin publication is not required. The current package remains `0.2.0` until that preparation succeeds.
+Extension: `drawmotive.textgraph-markdown`. Its version in `vscode/package.json` follows the coordinated target. Preparation requires public TextGraph SDK `0.2.1`; npm Markdown plugin publication is not required. Prepare version `0.2.1` through superproject `npm run release:prepare -- vscode-markdown` before packaging.
 
 ## Prepare and verify
 

@@ -2,7 +2,7 @@
   "name": "textgraph-markdown",
   "displayName": "TextGraph for Markdown Preview",
   "description": "Live TextGraph diagrams in VS Code's built-in Markdown preview. Local rendering, automatic updates, and inline diagnostics.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "drawmotive",
   "license": "MIT",
   "repository": {
@@ -64,7 +64,7 @@
     "package:dev": "node tooling/development.mjs package"
   },
   "dependencies": {
-    "@drawmotive/textgraph": "0.2.0"
+    "@drawmotive/textgraph": "0.2.1"
   },
   "devDependencies": {
     "@vscode/test-electron": "^2.5.2",
