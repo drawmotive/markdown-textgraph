@@ -1,10 +1,10 @@
 {
   "name": "@drawmotive/markdown-it-textgraph",
-  "version": "0.2.1",
+  "version": "0.2.2-alpha.1",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/",
-    "tag": "latest"
+    "tag": "alpha"
   },
   "description": "TextGraph diagrams for Markdown and VitePress",
   "type": "module",
@@ -44,7 +44,7 @@
     "release:check": "node .release/check.cjs --ready"
   },
   "dependencies": {
-    "@drawmotive/textgraph": "0.2.1"
+    "@drawmotive/textgraph": "0.2.2-alpha.1"
   },
   "peerDependencies": {
     "markdown-it": "^14.1.0",

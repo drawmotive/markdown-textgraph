@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.2-alpha.1 — 2026-09-25
+
+- Pin TextGraph SDK 0.2.2-alpha.1 for on-demand Chinese, Japanese and emoji rendering.
+- Publish previews to the alpha npm channel while preserving stable latest.
+
 ## 0.2.1
 
 - Default Markdown and VitePress PNG rendering to scale 1, matching the SDK; explicit higher scales remain supported.
