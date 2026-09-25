@@ -2,7 +2,7 @@
 
 Release version/channel come from the superproject release.json, projected into .release/target.json. Do not bump this package independently. Run npm run release:check before packaging; unprepared dependencies block release. The current artifact remains historical until preparation succeeds.
 
-Extension: `drawmotive.textgraph-markdown`. This alpha batch updates its development dependency to TextGraph SDK `0.2.2-alpha.1` but does not publish a VSIX. Marketplace and the extension package identity remain `0.2.1`; the generated target blocks packaging/publication until a future numeric preview version is explicitly selected.
+Extension: `drawmotive.textgraph-markdown`. This alpha batch updates its development dependency to TextGraph SDK `0.2.2-alpha.2` but does not publish a VSIX. Marketplace and the extension package identity remain `0.2.1`; the generated target blocks packaging/publication until a future numeric preview version is explicitly selected.
 
 ## Prepare and verify
 

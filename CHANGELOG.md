@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2-alpha.2 — 2026-09-25
+
+- Pin TextGraph SDK 0.2.2-alpha.2 to fix mixed backward and relation connections in rendered Markdown diagrams.
+
 ## 0.2.2-alpha.1 — 2026-09-25
 
 - Pin TextGraph SDK 0.2.2-alpha.1 for on-demand Chinese, Japanese and emoji rendering.
