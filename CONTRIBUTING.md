@@ -4,9 +4,9 @@ Use the [shared issue tracker](https://github.com/drawmotive/textgraph/issues)
 for Markdown, VitePress and VS Code preview issues. Include the product/version,
 OS, Node/npm or VS Code version, expected behavior and a small Markdown example.
 
-The root npm plugin supports Node.js 22.12+ on the 22 line or Node.js 24,
-with npm 10 or 11 on Linux, Windows and macOS. The independent VSIX build
-supports Node 22 or 24. Installed extension users use VS Code's own Node host.
+The root npm plugin supports Node.js 22.12+ on the 22 line,
+with its bundled npm on Linux, Windows and macOS. The independent VSIX build
+supports Node 22. Installed extension users use VS Code's own Node host.
 See the [plugin](README.md#requirements) and
 [extension](vscode/README.md#requirements) support boundaries.
 
