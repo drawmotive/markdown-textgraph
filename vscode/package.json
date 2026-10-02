@@ -54,7 +54,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
-    "build": "node .release/check.cjs --installed && webpack --mode production",
+    "build": "node .release/check.cjs --build && webpack --mode production",
     "test": "node --test --test-concurrency=1 test/*.test.mjs",
     "test:host": "node test/run-host.mjs",
     "package": "node tooling/package.mjs",

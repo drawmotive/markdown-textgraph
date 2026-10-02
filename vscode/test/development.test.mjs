@@ -26,7 +26,7 @@ async function fixture(t) {
   await writeFile(path.join(component, 'package.json'), '{}');
   await writeFile(path.join(sdk, 'package.json'), JSON.stringify({ name: '@drawmotive/textgraph', version: '0.2.0', type: 'module', exports: { './node': './src/node.js' } }));
   await writeFile(path.join(sdk, 'src/node.js'), 'export async function initializeTextGraph() { return { renderPng: async () => ({ localSource: true }) }; }');
-  await symlink(sdk, path.join(component, 'node_modules/@drawmotive/textgraph'), 'dir');
+  await symlink(sdk, path.join(component, 'node_modules/@drawmotive/textgraph'), 'junction');
   const manifest = { schemaVersion: 1, packageName: '@drawmotive/textgraph', packageVersion: '0.2.0', privateSource: { commit: 'a'.repeat(40), development: true }, runtimeModule: 'wasm/dotnet.js', entryAssembly: 'wasm/bridge.wasm', runtimeWasm: 'wasm/dotnet.native.wasm', runtimeConfig: 'wasm/bridge.runtimeconfig.json', rendering: { theme: 'wasm/themes.css', fonts: [{ family: 'Test', asset: 'wasm/test.ttf' }] }, assets: [] };
   for (const asset of ['dotnet.js', 'bridge.wasm', 'dotnet.native.wasm', 'bridge.runtimeconfig.json', 'themes.css', 'test.ttf']) {
     const bytes = Buffer.from(`local ${asset}`);
@@ -91,7 +91,7 @@ test('development VSIX contains selected local SDK, runtime and fonts and worker
     await cp(path.join(root, file), path.join(f.component, file), { recursive: true });
   }
   for (const name of await readdir(path.join(root, 'node_modules'))) {
-    if (name !== '@drawmotive') await symlink(path.join(root, 'node_modules', name), path.join(f.component, 'node_modules', name));
+    if (name !== '@drawmotive') await symlink(path.join(root, 'node_modules', name), path.join(f.component, 'node_modules', name), 'junction');
   }
   const beforeManifest = await readFile(path.join(f.component, 'package.json'));
   const beforeLock = await readFile(path.join(f.component, 'package-lock.json'));
