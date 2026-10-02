@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { cp, mkdtemp, mkdir, readFile, readdir, writeFile, rm, symlink } from 'node:fs/promises';
+import { cp, mkdtemp, mkdir, readFile, readdir, realpath, writeFile, rm, symlink } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
@@ -14,7 +14,7 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const require = createRequire(import.meta.url);
 
 async function fixture(t) {
-  const directory = await mkdtemp(path.join(os.tmpdir(), 'textgraph-development-'));
+  const directory = await realpath(await mkdtemp(path.join(os.tmpdir(), 'textgraph-development-')));
   t.after(() => rm(directory, { recursive: true, force: true }));
   const component = path.join(directory, 'component');
   const sdk = path.join(directory, 'sdk');

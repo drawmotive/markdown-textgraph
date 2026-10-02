@@ -22,7 +22,7 @@ Open a Markdown file, then run **Markdown: Open Preview to the Side** (`Ctrl+K V
 
 | Layer | Supported environment | Verification boundary |
 | --- | --- | --- |
-| Contributor build and VSIX packaging | Node.js 22 or 24; npm 10 or 11 on Linux, Windows and macOS | CI targets all three systems with both Node lines |
+| Contributor build and VSIX packaging | Node.js 22; npm 10 on Linux, Windows and macOS | CI targets all three systems with Node 22 |
 | Installed extension | VS Code 1.101+ desktop or Node-based remote Extension Host | VS Code supplies its own Node runtime; a separate Node/npm install is not required |
 | Markdown preview | VS Code's built-in preview webview | Host tests target the real Extension Host; this is not a Chromium/Firefox/WebKit browser product |
 

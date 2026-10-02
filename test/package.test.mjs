@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, realpath, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -21,7 +21,7 @@ async function command(args, cwd) {
 }
 
 test("packed public entries install with registry SDK, core types and a VitePress build", { timeout: 90000 }, async t => {
-  const temp = await mkdtemp(path.join(tmpdir(), "markdown-textgraph-consumer-"));
+  const temp = await realpath(await mkdtemp(path.join(tmpdir(), "markdown-textgraph-consumer-")));
   t.after(() => rm(temp, { recursive: true, force: true }));
   const output = await command([npmCli, "pack", "--ignore-scripts", "--workspaces=false", "--json", "--pack-destination", temp], root);
   const [pack] = JSON.parse(output);

@@ -60,7 +60,7 @@
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^22.0.0",
     "@types/react": "^19.3.0",
-    "markdown-it": "14.1.0",
+    "markdown-it": "14.3.2",
     "pngjs": "^7.0.0",
     "preact": "^10.29.8",
     "react": "^19.3.0",

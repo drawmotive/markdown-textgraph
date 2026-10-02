@@ -11,18 +11,18 @@ Release `0.2.2-alpha.2` uses the published TextGraph SDK `0.2.2-alpha.2`, pinned
 
 ## Requirements
 
-- Node.js 22.12.0+ in the 22 line, or Node.js 24; npm 10 or 11.
+- Node.js 22.12.0+ in the 22 line; npm 10.
 - markdown-it 14.x; VitePress support is tested against 2.0.0-alpha.19.
 - Plain markdown-it embeds images and needs a content security policy permitting `img-src data:`. VitePress uses independent images served by the site and can use `img-src 'self'`.
 
 | Layer | Supported environment | Verification boundary |
 | --- | --- | --- |
-| Plugin build and Node Worker rendering | Linux, Windows, macOS; Node 22.12+ or 24; npm 10 or 11 | CI targets all three systems with both Node lines |
+| Plugin build and Node Worker rendering | Linux, Windows, macOS; Node 22.12+; npm 10 | CI targets all three systems with Node 22 |
 | Rendered Markdown and VitePress pages | Current Chromium is covered by the browser suite | Output is ordinary PNG/HTML; Firefox, WebKit and mobile browsers are not currently tested by this repo |
 | VS Code integration | VS Code 1.101+ desktop or Node-based remote host | Separate [VSIX package and support boundary](vscode/README.md#requirements) |
 
 The standalone audit on 2026-10-01 ran Linux x64 with Node 22.23.2 and npm
-10.9.8. CI targets and declared support do not assert Windows, macOS, Node 24
+10.9.8. CI targets and declared support do not assert Windows, macOS
 or browser/Extension Host execution in that audit. The npm plugin renders
 on Node; it is not a browser-side TextGraph runtime.
 
