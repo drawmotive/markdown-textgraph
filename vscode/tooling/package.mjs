@@ -3,9 +3,10 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { checkComponent } from '../.release/check.cjs';
 
-// Channel selection comes from the same projection as the numeric VSIX identity.
+// Local VSIX packaging checks exact public build inputs. Publication separately
+// enforces release eligibility; a deferred release still permits contribution builds.
 const root=fileURLToPath(new URL('../',import.meta.url));
-const errors=checkComponent(root,{ready:true,installed:true});
+const errors=checkComponent(root,{build:true});
 if(errors.length) throw new Error(errors.join('\n'));
 const target=JSON.parse(await readFile(new URL('../.release/target.json',import.meta.url),'utf8'));
 const cli=fileURLToPath(import.meta.resolve('@vscode/vsce/vsce'));

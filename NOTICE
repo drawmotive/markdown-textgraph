@@ -1,0 +1,17 @@
+TextGraph Markdown redistribution notices
+
+The public markdown-it/VitePress plugin code uses the MIT license in LICENSE.
+The independent VS Code extension uses the MIT license in vscode/LICENSE.
+
+Both products use the exact public @drawmotive/textgraph version locked in
+their own package-lock.json. The VSIX includes its compiled runtime and font
+assets. Preserve the SDK license and the runtime font notices when bundling
+or redistributing those assets; Noto Sans and Fuzzy Bubbles retain their SIL
+Open Font License 1.1 terms. Optional font packages retain their own licenses.
+
+markdown-it, VitePress, VS Code tooling and other dependencies retain their
+own copyright notices and licenses. The repository MIT license does not
+replace those terms or license the SDK's private producer source.
+
+This file indexes redistribution responsibilities; it does not amend existing
+licenses or grant rights to third-party names or trademarks.

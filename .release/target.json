@@ -1,13 +1,12 @@
 {
   "schemaVersion": 1,
-  "releaseVersion": "0.2.2-alpha.3",
+  "releaseVersion": "0.2.2-alpha.2",
   "channel": "alpha",
   "name": "@drawmotive/markdown-it-textgraph",
-  "version": "0.2.2-alpha.3",
+  "version": "0.2.2-alpha.2",
   "dependencies": {
-    "@drawmotive/textgraph": "0.2.2-alpha.3"
+    "@drawmotive/textgraph": "0.2.2-alpha.2"
   },
   "native": false,
-  "publishable": false,
-  "excludedReason": "Renderer service milestone releases only the TextGraph SDK; retain the existing published component artifact."
+  "publishable": true
 }
