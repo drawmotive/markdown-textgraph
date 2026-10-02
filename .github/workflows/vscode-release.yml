@@ -6,8 +6,6 @@ on:
         description: Publish the tested VSIX to VS Code Marketplace
         type: boolean
         default: false
-  pull_request:
-    paths: ['vscode/**', '.github/workflows/vscode-release.yml']
 permissions:
   contents: read
 jobs:
