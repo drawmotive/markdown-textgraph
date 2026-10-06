@@ -12,7 +12,7 @@ Release `0.2.2-alpha.2` uses the published TextGraph SDK `0.2.2-alpha.2`, pinned
 ## Requirements
 
 - Node.js 22.12.0+ in the 22 line; npm 10.
-- markdown-it 14.x; VitePress support is tested against 2.0.0-alpha.19.
+- markdown-it 14.x or 15.x; VitePress support is tested against 2.0.0-alpha.19.
 - Plain markdown-it embeds images and needs a content security policy permitting `img-src data:`. VitePress uses independent images served by the site and can use `img-src 'self'`.
 
 | Layer | Supported environment | Verification boundary |

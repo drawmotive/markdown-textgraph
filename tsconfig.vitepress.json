@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    // tooling/check.mjs resolves the Markdown 14 host types for this project,
+    // including installations hoisted by the parent npm workspace.
+    "types": ["node", "web-bluetooth"]
+  },
+  "include": [
+    "src/**/*.d.ts",
+    "test/types/**/*.ts"
+  ]
+}

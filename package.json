@@ -47,7 +47,7 @@
     "@drawmotive/textgraph": "0.2.2-alpha.2"
   },
   "peerDependencies": {
-    "markdown-it": "^14.1.0",
+    "markdown-it": "^14.1.0 || ^15.0.2",
     "vitepress": "2.0.0-alpha.19"
   },
   "peerDependenciesMeta": {
@@ -56,16 +56,16 @@
     }
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
-    "@types/markdown-it": "^14.1.2",
-    "@types/node": "^22.0.0",
+    "@playwright/test": "^1.63.0",
+    "@types/markdown-it": "^14.2.0",
+    "@types/node": "^22.20.5",
     "@types/react": "^19.3.0",
-    "markdown-it": "14.3.2",
+    "markdown-it": "15.0.2",
     "pngjs": "^7.0.0",
-    "preact": "^10.29.8",
+    "preact": "^11.0.0",
     "react": "^19.3.0",
     "search-insights": "^2.17.3",
-    "typescript": "^5.9.3",
+    "typescript": "^7.0.2",
     "vitepress": "2.0.0-alpha.19"
   }
 }

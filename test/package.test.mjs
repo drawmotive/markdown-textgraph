@@ -8,6 +8,7 @@ import path from "node:path";
 import test from "node:test";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
+const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
 const npmCli = process.env.npm_execpath ?? path.resolve(path.dirname(process.execPath), "../lib/node_modules/npm/bin/npm-cli.js");
 async function command(args, cwd) {
   const child = spawn(process.execPath, args, { cwd, stdio: ["ignore", "pipe", "pipe"] });
@@ -31,7 +32,7 @@ test("packed public entries install with registry SDK, core types and a VitePres
   assert.ok(files.includes("LICENSE"));
   assert.ok(!files.some(file => new RegExp("[.]local|generated/wasm|node_modules|test/|tooling/").test(file)));
   await writeFile(path.join(temp, "package.json"), JSON.stringify({ private: true, type: "module" }));
-  await command([npmCli, "install", "--ignore-scripts", "--omit=optional", "--registry=https://registry.npmjs.org", "--no-audit", "--no-fund", path.join(temp, pack.filename), "markdown-it@14.1.0", "@types/markdown-it@14", "@types/node@22", "typescript@5.9.3"], temp);
+  await command([npmCli, "install", "--ignore-scripts", "--registry=https://registry.npmjs.org", "--no-audit", "--no-fund", path.join(temp, pack.filename), ...["markdown-it", "@types/markdown-it", "@types/node", "typescript"].map(name => `${name}@${manifest.devDependencies[name]}`)], temp);
   const require = createRequire(path.join(temp, "package.json"));
   assert.throws(() => require.resolve("vitepress"), { code: "MODULE_NOT_FOUND" });
   const sdkPath = require.resolve("@drawmotive/textgraph/node");
@@ -39,10 +40,10 @@ test("packed public entries install with registry SDK, core types and a VitePres
   const lock = JSON.parse(await readFile(path.join(temp, "package-lock.json"), "utf8"));
   assert.match(lock.packages["node_modules/@drawmotive/textgraph"].resolved, /^https:/);
   await writeFile(path.join(temp, "consumer.ts"), `import MarkdownIt from "markdown-it"; import { createTextGraphMarkdown } from "@drawmotive/markdown-it-textgraph"; const md = new MarkdownIt(); const session = createTextGraphMarkdown({onDiagnostic(value) { const line: number | undefined = value.documentLocation?.line; }}); md.use(session.markdownIt); await session.render(md, "plain"); await session.dispose();`);
-  await command([require.resolve("typescript/bin/tsc"), "--noEmit", "--strict", "--module", "NodeNext", "--moduleResolution", "NodeNext", "--target", "ES2022", "consumer.ts"], temp);
+  await command([path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc"), "--noEmit", "--strict", "--types", "node", "--module", "NodeNext", "--moduleResolution", "NodeNext", "--target", "ES2022", "consumer.ts"], temp);
   await writeFile(path.join(temp, "render.mjs"), String.raw`import MarkdownIt from "markdown-it"; import { createTextGraphMarkdown } from "@drawmotive/markdown-it-textgraph"; const md=new MarkdownIt(); const s=createTextGraphMarkdown(); md.use(s.markdownIt); try { const html=await s.render(md, "~~~textgraph\nA -> B\n~~~"); if(!html.includes("data:image/png;base64,")) throw new Error(html); console.log("registry PNG rendered"); } finally { await s.dispose(); }`);
   assert.match(await command([path.join(temp, "render.mjs")], temp), /registry PNG rendered/);
-  await command([npmCli, "install", "--ignore-scripts", "--registry=https://registry.npmjs.org", "--no-audit", "--no-fund", "vitepress@2.0.0-alpha.19"], temp);
+  await command([npmCli, "install", "--ignore-scripts", "--registry=https://registry.npmjs.org", "--no-audit", "--no-fund", `vitepress@${manifest.devDependencies.vitepress}`], temp);
   await mkdir(path.join(temp, ".vitepress"));
   await writeFile(path.join(temp, ".vitepress/config.mjs"), `import {withTextGraph} from "@drawmotive/markdown-it-textgraph/vitepress"; export default withTextGraph({});`);
   await writeFile(path.join(temp, "index.md"), "# Packed plugin\n\n~~~textgraph\nA -> B\n~~~");
