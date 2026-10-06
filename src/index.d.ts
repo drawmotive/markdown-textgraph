@@ -1,9 +1,13 @@
-import type { MarkdownIt } from 'markdown-it';
+import type MarkdownItConstructor from 'markdown-it';
 import type {
   TextGraphLanguagePack,
   TextGraphRenderDiagnostic,
   TextGraphRenderPngOptions,
 } from '@drawmotive/textgraph';
+
+// The default constructor is shared by Markdown 14 typings and Markdown 15's
+// bundled declarations; older 14.x typings do not export a named instance type.
+type MarkdownIt = InstanceType<typeof MarkdownItConstructor>;
 
 export interface MarkdownDiagnostic {
   file?: string;
