@@ -18,15 +18,25 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
   const pkg = json(path.join(root, "package.json"));
   if (pkg.name !== target.name || pkg.version !== target.version || typeof pkg.publisher !== "string" || !/^[A-Za-z0-9][A-Za-z0-9-]*$/.test(pkg.publisher)) throw new Error("Current package identity does not match the release target.");
   const expected = new Map([["extension/package.json", { file: path.join(root, "package.json") }]]);
-  for (const directory of ["dist", "media"]) {
+  for (const directory of ["dist", ...(pkg.name === 'vscode-drawmotive' ? [] : ["media"])]) {
     const files = fileTree(path.join(root, directory));
     if (!files.size) throw new Error(`Current ${directory} directory is empty; build the extension before validating its VSIX.`);
     for (const [relative, file] of files) expected.set(`extension/${directory}/${relative}`, { file });
   }
   // Webpack output can itself be stale. Bind every bundled public SDK file to
   // the checked installation instead of trusting matching archive/dist copies.
-  const sdkPrefix = "dist/node_modules/@drawmotive/textgraph/";
-  const sdk = fileTree(path.join(root, "node_modules/@drawmotive/textgraph"));
+  const editor = pkg.name === 'vscode-drawmotive';
+  const sdkPrefix = editor ? 'dist/editor/' : "dist/node_modules/@drawmotive/textgraph/";
+  const sdkRoot = path.join(root, 'node_modules', editor ? '@drawmotive/editor' : '@drawmotive/textgraph');
+  const sdk = editor ? new Map() : fileTree(sdkRoot);
+  if (editor) {
+    const manifest = json(path.join(sdkRoot, 'generated/editor-manifest.json'));
+    for (const asset of manifest.assets) sdk.set(asset.path.slice('editor/'.length), path.join(sdkRoot, 'generated', asset.path));
+    sdk.set('sdk.js', path.join(sdkRoot, 'src/index.js'));
+    sdk.set('LICENSE', path.join(sdkRoot, 'LICENSE'));
+    for (const [name, file] of fileTree(path.join(sdkRoot, 'licenses'))) sdk.set('licenses/' + name, file);
+    for (const name of ['host.html', 'host.js']) sdk.set(name, path.join(root, 'webview', name));
+  }
   for (const [relative, file] of sdk) {
     const key = `extension/${sdkPrefix}${relative}`;
     const bundled = expected.get(key);
