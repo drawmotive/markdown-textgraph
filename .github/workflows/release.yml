@@ -87,9 +87,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+          registry-url: https://registry.npmjs.org/
       - run: npm install --global npm@11.19.1
       - name: Download the reviewed archive without rebuilding
         env:
@@ -102,4 +104,5 @@ jobs:
           ARTIFACT_INTEGRITY: ${{ inputs.artifact_integrity }}
           ARCHIVE_FILE: ${{ inputs.archive_file }}
           RECEIPT_FILE: github-evidence.json
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: node ./.release/remote-npm.mjs .retained .
