@@ -1,13 +1,12 @@
 {
   "schemaVersion": 1,
-  "releaseVersion": "0.2.2-alpha.2",
+  "releaseVersion": "0.2.2-alpha.4",
   "channel": "alpha",
   "name": "textgraph-markdown",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "dependencies": {
-    "@drawmotive/textgraph": "0.2.2-alpha.2"
+    "@drawmotive/textgraph": "0.2.2-alpha.4"
   },
   "native": false,
-  "publishable": false,
-  "excludedReason": "Alpha npm release only; Marketplace preview numbering is not reserved. Update SDK references without publishing a VSIX."
+  "publishable": true
 }
