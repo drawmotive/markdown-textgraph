@@ -32,10 +32,18 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
   if (editor) {
     const manifest = json(path.join(sdkRoot, 'generated/editor-manifest.json'));
     for (const asset of manifest.assets) sdk.set(asset.path.slice('editor/'.length), path.join(sdkRoot, 'generated', asset.path));
-    sdk.set('sdk.js', path.join(sdkRoot, 'src/index.js'));
     sdk.set('LICENSE', path.join(sdkRoot, 'LICENSE'));
     for (const [name, file] of fileTree(path.join(sdkRoot, 'licenses'))) sdk.set('licenses/' + name, file);
-    for (const name of ['host.html', 'host.js']) sdk.set(name, path.join(root, 'webview', name));
+    // The product owns its webview; the SDK owns only its browser entry and
+    // manifest runtime. Bind both staging boundaries to their source authority.
+    const webview = new Map([['sdk.js', path.join(sdkRoot, 'src/index.js')],
+      ...['editor.js', 'editor-session.mjs'].map(name => [name, path.join(root, 'webview', name)])]);
+    for (const [name, file] of webview) {
+      const bundled = expected.get('extension/dist/webview/' + name);
+      if (!bundled) throw new Error('Built extension is missing webview file ' + name);
+      if (hash(fs.readFileSync(bundled.file)) !== hash(fs.readFileSync(file))) throw new Error('Built extension contains a stale webview file ' + name);
+    }
+    for (const key of expected.keys()) if (key.startsWith('extension/dist/webview/') && !webview.has(key.slice('extension/dist/webview/'.length))) throw new Error('Built extension contains unrecognized webview files');
   }
   for (const [relative, file] of sdk) {
     const key = `extension/${sdkPrefix}${relative}`;
