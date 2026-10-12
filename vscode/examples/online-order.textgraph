@@ -1,27 +1,36 @@
 shopping(info): Shopping {
-  browse -> checkout
-  browse: Browse the shop
-  checkout: Place an order
+  browse
+  checkout
 }
 
 processing(primary): Behind the scenes {
-  payment -> saved : Yes
-  payment ->(dashed warning) retry : No
-  retry ->(dashed warning) payment
-  saved -> email
-
-  payment(diamond fill primary): Payment\naccepted?
-  retry(warning): Try another\npayment
-  saved: Save the order
-  email: Send confirmation\nemail
+  payment
+  retry
+  saved
+  email
 }
 
 delivery(success): Delivery {
-  pack -> ship -> arrived
-  pack: Prepare the package
-  ship: Ship the package
-  arrived(ellipse fill success): Package arrives
+  pack
+  ship
+  arrived
 }
 
+browse -> checkout
+payment -> saved : Yes
+payment ->(dashed warning) retry : No
+retry ->(dashed warning) payment
+saved -> email
+pack -> ship -> arrived
 checkout -> payment
 saved -> pack
+
+browse: Browse the shop
+checkout: Place an order
+payment(diamond fill primary): Payment\naccepted?
+retry(warning): Try another\npayment
+saved: Save the order
+email: Send confirmation\nemail
+pack: Prepare the package
+ship: Ship the package
+arrived(ellipse fill success): Package arrives

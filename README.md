@@ -90,7 +90,27 @@ SDK `0.2.2-alpha.2` returns logical display dimensions even when `maxWidth` caps
 
 Custom fonts can be injected using the SDK public language-pack structure. The published optional `@drawmotive/textgraph-fonts@0.2.2-alpha.2` package supplies Chinese, Japanese and emoji descriptors; it is not a required dependency.
 
-SDK `0.2.0` renders inline group targets such as `A -> {}` and `A -> {{x}}`. Unmatched closing braces return syntax diagnostics.
+Node names identify the same node throughout a diagram, including inside a
+group. Group bodies contain member names, nested groups and comments. Keep
+arrows, node labels and node styles at the root; their order does not change
+membership. A node can belong to one group. Use distinct names for distinct
+nodes, even when their visible labels match.
+
+```textgraph
+shopping {
+  checkout
+}
+backend {
+  payment
+}
+checkout -> payment
+checkout: Place an order
+payment: Accept payment
+```
+
+Root arrows can also target inline groups, such as `A -> { B }`. Use `B`
+everywhere without a group path. Unmatched closing braces return syntax
+diagnostics.
 
 ## Development
 
