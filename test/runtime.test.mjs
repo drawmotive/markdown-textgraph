@@ -67,6 +67,46 @@ test("public SDK renders inline group targets and recovers after invalid braces"
   } finally { await renderer.dispose(); }
 });
 
+test("local SDK Worker renders scoped names and reports ambiguous root references",
+  { skip: !process.env.DRAWMOTIVE_TEXTGRAPH_RUNTIME, timeout: 30000 }, async () => {
+    const renderer = createWorkerRenderer();
+    const groups = ["Review { submit -> done }", "Delivery { pack -> done }"];
+    const references = "Review.done -> pack\nReview.done: Approved\nDelivery.done: Delivered";
+    try {
+      for (const ordered of [groups, groups.toReversed()]) {
+        const structure = ordered.join("\n");
+        for (const source of [structure + "\n" + references, references + "\n" + structure]) {
+          const result = await renderer.renderPng(source);
+          assert.equal(result.success, true, JSON.stringify(result.diagnostics));
+          assert.ok(PNG.sync.read(Buffer.from(result.png, "base64")).width > 0);
+        }
+        const ambiguous = await renderer.renderPng(structure + "\ndone: Complete");
+        assert.equal(ambiguous.success, false);
+        const messages = ambiguous.diagnostics.map(item => item.message).join("\n");
+        assert.match(messages, /Review\.done/);
+        assert.match(messages, /Delivery\.done/);
+      }
+      const example = await readFile(new URL("../examples/repeated-names.textgraph", import.meta.url), "utf8");
+      assert.equal((await renderer.renderPng(example)).success, true);
+      assert.equal((await renderer.renderPng("Outer { Backend { payment -> saved } }\nBackend.payment -> saved")).success, true);
+    } finally { await renderer.dispose(); }
+  });
+
+test("local SDK Markdown shows ambiguity diagnostics and recovers with a qualified name",
+  { skip: !process.env.DRAWMOTIVE_TEXTGRAPH_RUNTIME, timeout: 30000 }, async () => {
+    const session = createTextGraphMarkdown();
+    const md = new MarkdownIt().use(session.markdownIt);
+    const structure = "Review { done }\nDelivery { done }\n";
+    try {
+      const invalid = await session.render(md, "~~~textgraph\n" + structure + "done: Complete\n~~~");
+      assert.match(invalid, /Review\.done/);
+      assert.match(invalid, /Delivery\.done/);
+      assert.doesNotMatch(invalid, /data:image\/png;base64,/);
+      const repaired = await session.render(md, "~~~textgraph\n" + structure + "Review.done: Approved\nDelivery.done: Delivered\n~~~");
+      assert.match(repaired, /data:image\/png;base64,/);
+    } finally { await session.dispose(); }
+  });
+
 test("public SDK returns DSL diagnostics but rejects invalid operational render options", async () => {
   const renderer = createWorkerRenderer();
   try {

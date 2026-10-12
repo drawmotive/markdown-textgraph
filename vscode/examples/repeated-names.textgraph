@@ -1,0 +1,13 @@
+Review(info): Order review {
+  submit -> done
+}
+Delivery(success): Delivery {
+  pack -> done
+}
+
+Review.done -> pack
+
+submit: Place an order
+Review.done: Approved
+pack: Prepare the package
+Delivery.done: Delivered

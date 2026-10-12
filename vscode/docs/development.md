@@ -30,7 +30,21 @@ Independent of the DrawMotive drawing editor. Uses public `@drawmotive/textgraph
 
 ## Errors and limits
 
-SDK syntax diagnostics appear beside the source. Editing triggers a new render. Node names are global; connections inside a group introduce its members, and repeated references reuse those members. Group bodies also allow bare members and nested groups. Connections may style endpoints inline. Connections between groups and separate node decorations stay at the root. Root arrows may target inline groups such as `A -> { B -> C }`. Each render has a 15-second deadline and the Worker is terminated on timeout. Other diagrams continue in a fresh Worker. A timeout is an operational error, not a syntax diagnosis.
+SDK syntax diagnostics appear beside the source. Editing triggers a new render.
+Connections inside a group introduce local nodes, and repeated short references
+in that group reuse them. The same name in different groups creates different
+nodes. Root short references and decorations resolve only when the name is
+unique; ambiguous names report the matching qualified names, such as
+`Review.done` and `Delivery.done`. Group names follow the same rule, including
+unique trailing paths for nested objects. Group bodies also allow bare members
+and nested groups. Connections may style endpoints inline or use qualified
+endpoints to refer to existing external objects without moving them. Standalone
+node decorations stay at the root. Root arrows may target inline groups such as
+`A -> { B -> C }`.
+
+Each render has a 15-second deadline and the Worker is terminated on timeout.
+Other diagrams continue in a fresh Worker. A timeout is an operational error,
+not a syntax diagnosis.
 
 Each diagram is limited to 64 KiB of source and a maximum width of 2048 pixels. Complex diagrams may hit the deadline. Bundled SDK fonts determine available glyphs; custom font packs are not yet configurable.
 

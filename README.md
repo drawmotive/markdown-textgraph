@@ -90,14 +90,12 @@ SDK `0.2.2-alpha.2` returns logical display dimensions even when `maxWidth` caps
 
 Custom fonts can be injected using the SDK public language-pack structure. The published optional `@drawmotive/textgraph-fonts@0.2.2-alpha.2` package supplies Chinese, Japanese and emoji descriptors; it is not a required dependency.
 
-Node names identify the same node throughout a diagram, including inside a
-group. Connections inside a group introduce its members, so there is no need
-to list them separately. Group bodies also allow bare member names, nested
+Connections inside a group introduce its local nodes, so there is no need to
+list them separately. Group bodies also allow bare member names, nested
 groups and comments. Connections may style endpoints inline, such as
-`browse(ellipse) -> checkout`. Keep connections between groups and separate
-node labels or styles at the root; their order does not change membership. A
-node can belong to one group. Repeated references in its group reuse the same
-member. Use distinct names for distinct nodes, even when their visible labels match.
+`browse(ellipse) -> checkout`. Standalone node labels or styles stay at the
+root; their order does not change containment. Root short names find an
+existing node when that name is unique in the diagram.
 
 ```textgraph
 shopping {
@@ -111,8 +109,29 @@ checkout: Place an order
 payment: Accept payment
 ```
 
+Here `payment` and `backend.payment` both identify the backend node. The same
+name in different groups creates different nodes; short names inside a group
+are local. At the root, qualify a name only when several objects match:
+
+```textgraph
+Review { submit -> done }
+Delivery { pack -> done }
+Review.done -> pack
+Review.done: Approved
+Delivery.done: Delivered
+```
+
+Root `done` is ambiguous and reports the matching qualified names. Group
+endpoints prefer a local member or group, then a unique declared group
+elsewhere. Ambiguous group names need a prefix, and nested names can use a
+unique suffix such as
+`Backend.payment` for `Outer.Backend.payment`. Qualified references may
+target another group's existing node without changing containment.
+
+[Complete repeated-name example](examples/repeated-names.textgraph)
+
 Root arrows can also target inline groups, such as `A -> { B -> C }`. Use `B`
-everywhere without a group path. Unmatched closing braces return syntax
+at the root when it is unique. Unmatched closing braces return syntax
 diagnostics.
 
 ## Development

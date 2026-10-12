@@ -57,10 +57,16 @@ arrived(ellipse fill success): Package arrives
 
 </details>
 
-Connections inside a group introduce its members and may style endpoints
-inline. Keep connections between groups and separate node labels or styles
-at the root. Each name refers to the same node throughout the diagram. A node
-belongs to one group; use distinct names when two nodes share a visible label.
+Connections inside a group introduce its local nodes and may style endpoints
+inline. Keep standalone node labels or styles at the root, in any order.
+Root short names find a node when its name is unique. The same name in two
+groups creates two nodes: `Review { done }` and `Delivery { done }` need
+`Review.done` or `Delivery.done` when referenced at the root. Short names
+inside each group are local. Group names follow the same rule, and nested
+names can use a unique suffix such as `Backend.payment`. Qualified
+connection endpoints refer to existing objects without changing containment.
+
+[Example with repeated node names](examples/repeated-names.textgraph)
 
 Renders locally, without an account or API key. Requires VS Code 1.101 or newer and a trusted workspace; the first preview takes a few seconds to initialize.
 

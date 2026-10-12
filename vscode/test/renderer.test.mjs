@@ -3,6 +3,7 @@ import test from 'node:test';
 import { EventEmitter } from 'node:events';
 import { Worker } from 'node:worker_threads';
 import { PNG } from 'pngjs';
+import { readFile } from 'node:fs/promises';
 import { Renderer } from '../src/renderer.cjs';
 
 class FakeWorker extends EventEmitter {
@@ -75,3 +76,27 @@ test('public npm SDK renders inline groups and recovers after syntax diagnostics
     assert.notEqual(recovered.png, first.png);
   } finally { await r.dispose(); }
 });
+
+test('local SDK preview Worker renders local duplicate names and recovers from root ambiguity',
+  { skip: !process.env.DRAWMOTIVE_TEXTGRAPH_RUNTIME, timeout: 60000 }, async () => {
+    const r = new Renderer({ startWorker: () => new Worker(new URL('../src/render-worker.mjs', import.meta.url)), timeoutMs: 8000 });
+    const groups = ['Review { submit -> done }', 'Delivery { pack -> done }'];
+    const references = 'Review.done -> pack\nReview.done: Approved\nDelivery.done: Delivered';
+    try {
+      for (const ordered of [groups, groups.toReversed()]) {
+        const structure = ordered.join('\n');
+        const ambiguous = await r.render(structure + '\ndone: Complete');
+        assert.equal(ambiguous.success, false);
+        const messages = ambiguous.diagnostics.map(item => item.message).join('\n');
+        assert.match(messages, /Review\.done/);
+        assert.match(messages, /Delivery\.done/);
+        for (const source of [structure + '\n' + references, references + '\n' + structure]) {
+          const result = await r.render(source);
+          assert.equal(result.success, true, JSON.stringify(result.diagnostics));
+          assert.ok(PNG.sync.read(Buffer.from(result.png, 'base64')).width > 0);
+        }
+      }
+      const example = await readFile(new URL('../examples/repeated-names.textgraph', import.meta.url), 'utf8');
+      assert.equal((await r.render(example)).success, true);
+    } finally { await r.dispose(); }
+  });
