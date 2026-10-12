@@ -91,24 +91,27 @@ SDK `0.2.2-alpha.2` returns logical display dimensions even when `maxWidth` caps
 Custom fonts can be injected using the SDK public language-pack structure. The published optional `@drawmotive/textgraph-fonts@0.2.2-alpha.2` package supplies Chinese, Japanese and emoji descriptors; it is not a required dependency.
 
 Node names identify the same node throughout a diagram, including inside a
-group. Group bodies contain member names, nested groups and comments. Keep
-arrows, node labels and node styles at the root; their order does not change
-membership. A node can belong to one group. Use distinct names for distinct
-nodes, even when their visible labels match.
+group. Connections inside a group introduce its members, so there is no need
+to list them separately. Group bodies also allow bare member names, nested
+groups and comments. Connections may style endpoints inline, such as
+`browse(ellipse) -> checkout`. Keep connections between groups and separate
+node labels or styles at the root; their order does not change membership. A
+node can belong to one group. Repeated references in its group reuse the same
+member. Use distinct names for distinct nodes, even when their visible labels match.
 
 ```textgraph
 shopping {
-  checkout
+  browse -> checkout
 }
 backend {
-  payment
+  payment -> saved
 }
 checkout -> payment
 checkout: Place an order
 payment: Accept payment
 ```
 
-Root arrows can also target inline groups, such as `A -> { B }`. Use `B`
+Root arrows can also target inline groups, such as `A -> { B -> C }`. Use `B`
 everywhere without a group path. Unmatched closing braces return syntax
 diagnostics.
 

@@ -54,7 +54,7 @@ test("Worker defaults match explicit scale one and preserve explicit higher dens
 test("public SDK renders inline group targets and recovers after invalid braces", { timeout: 30000 }, async () => {
   const renderer = createWorkerRenderer();
   try {
-    for (const source of ["A -> {}", "A -> {{x}}", "A -> { B\nC }\nB -> C"]) {
+    for (const source of ["A -> {}", "A -> {{x}}", "A -> { B -> C }"]) {
       const result = await renderer.renderPng(source);
       assert.equal(result.success, true, JSON.stringify(result.diagnostics));
       const png = PNG.sync.read(Buffer.from(result.png, "base64"));

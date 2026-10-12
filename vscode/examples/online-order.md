@@ -2,29 +2,20 @@
 
 ```textgraph
 shopping(info): Shopping {
-  browse
-  checkout
+  browse -> checkout
 }
 
 processing(primary): Behind the scenes {
-  payment
-  retry
-  saved
-  email
+  payment -> saved : Yes
+  payment ->(dashed warning) retry : No
+  retry ->(dashed warning) payment
+  saved -> email
 }
 
 delivery(success): Delivery {
-  pack
-  ship
-  arrived
+  pack -> ship -> arrived
 }
 
-browse -> checkout
-payment -> saved : Yes
-payment ->(dashed warning) retry : No
-retry ->(dashed warning) payment
-saved -> email
-pack -> ship -> arrived
 checkout -> payment
 saved -> pack
 
