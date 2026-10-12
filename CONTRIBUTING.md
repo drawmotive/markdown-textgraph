@@ -8,7 +8,7 @@ The root npm plugin supports Node.js 22.12+ on the 22 line,
 with its bundled npm on Linux, Windows and macOS. The independent VSIX build
 supports Node 22. Installed extension users use VS Code's own Node host.
 See the [plugin](README.md#requirements) and
-[extension](vscode/README.md#requirements) support boundaries.
+[extension](vscode/docs/development.md#requirements) support boundaries.
 
 From a standalone public checkout, verify the npm plugin:
 

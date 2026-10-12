@@ -1,0 +1,31 @@
+# What happens when you place an online order?
+
+```textgraph
+shopping(info): Shopping {
+  browse -> checkout
+  browse: Browse the shop
+  checkout: Place an order
+}
+
+processing(primary): Behind the scenes {
+  payment -> saved : Yes
+  payment ->(dashed warning) retry : No
+  retry ->(dashed warning) payment
+  saved -> email
+
+  payment(diamond fill primary): Payment\naccepted?
+  retry(warning): Try another\npayment
+  saved: Save the order
+  email: Send confirmation\nemail
+}
+
+delivery(success): Delivery {
+  pack -> ship -> arrived
+  pack: Prepare the package
+  ship: Ship the package
+  arrived(ellipse fill success): Package arrives
+}
+
+checkout -> payment
+saved -> pack
+```

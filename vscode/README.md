@@ -1,74 +1,64 @@
 # TextGraph for Markdown Preview
 
-> **[Report all TextGraph issues on GitHub →](https://github.com/drawmotive/textgraph/issues)**
-> Use this shared tracker for extension bugs, rendering problems, feature requests, and documentation issues.
+**Write the flow. See the diagram.**
 
-Render `textgraph` fenced code blocks as diagrams in VS Code’s built-in Markdown preview. Diagrams update automatically as you edit, including unsaved changes. Multiple diagrams, ordinary Markdown, and inline errors work together.
+Turn a few lines in your Markdown into a diagram people can follow, right beside your text in VS Code.
+
+[Install TextGraph](https://marketplace.visualstudio.com/items?itemName=drawmotive.textgraph-markdown) · [Try this diagram](https://textgraph.dev/playground#source=shopping%28info%29%3A%20Shopping%20%7B%0A%20%20browse%20-%3E%20checkout%0A%20%20browse%3A%20Browse%20the%20shop%0A%20%20checkout%3A%20Place%20an%20order%0A%7D%0A%0Aprocessing%28primary%29%3A%20Behind%20the%20scenes%20%7B%0A%20%20payment%20-%3E%20saved%20%3A%20Yes%0A%20%20payment%20-%3E%28dashed%20warning%29%20retry%20%3A%20No%0A%20%20retry%20-%3E%28dashed%20warning%29%20payment%0A%20%20saved%20-%3E%20email%0A%0A%20%20payment%28diamond%20fill%20primary%29%3A%20Payment%5Cnaccepted%3F%0A%20%20retry%28warning%29%3A%20Try%20another%5Cnpayment%0A%20%20saved%3A%20Save%20the%20order%0A%20%20email%3A%20Send%20confirmation%5Cnemail%0A%7D%0A%0Adelivery%28success%29%3A%20Delivery%20%7B%0A%20%20pack%20-%3E%20ship%20-%3E%20arrived%0A%20%20pack%3A%20Prepare%20the%20package%0A%20%20ship%3A%20Ship%20the%20package%0A%20%20arrived%28ellipse%20fill%20success%29%3A%20Package%20arrives%0A%7D%0A%0Acheckout%20-%3E%20payment%0Asaved%20-%3E%20pack%0A) · [Open the example Markdown](examples/online-order.md)
+
+![TextGraph source beside its rendered online-order diagram: Shopping, Behind the scenes, and Delivery, including a payment decision, a retry loop, and a confirmation email.](media/online-order-demo.png)
+
+## Try it with your own words
+
+1. Install **TextGraph for Markdown Preview** and open [online-order.md](examples/online-order.md) in a trusted workspace.
+2. Run **Markdown: Open Preview to the Side** (`Ctrl+K V`, or `Cmd+K V` on macOS).
+3. Change **Package arrives** to **Delivered**. The diagram updates as you type, including unsaved edits.
+
+Your diagram stays with your documentation as readable text.
+
+<details>
+<summary>Copy the complete Markdown example</summary>
 
 ````markdown
-# A small workflow
+# What happens when you place an online order?
 
 ```textgraph
-Start -> Review -> Done
+shopping(info): Shopping {
+  browse -> checkout
+  browse: Browse the shop
+  checkout: Place an order
+}
+
+processing(primary): Behind the scenes {
+  payment -> saved : Yes
+  payment ->(dashed warning) retry : No
+  retry ->(dashed warning) payment
+  saved -> email
+
+  payment(diamond fill primary): Payment\naccepted?
+  retry(warning): Try another\npayment
+  saved: Save the order
+  email: Send confirmation\nemail
+}
+
+delivery(success): Delivery {
+  pack -> ship -> arrived
+  pack: Prepare the package
+  ship: Ship the package
+  arrived(ellipse fill success): Package arrives
+}
+
+checkout -> payment
+saved -> pack
 ```
 ````
 
-Open a Markdown file, then run **Markdown: Open Preview to the Side** (`Ctrl+K V`, or `Cmd+K V` on macOS). The first diagram takes a few seconds to initialize.
+[TextGraph source](examples/online-order.textgraph)
 
-## Requirements
+</details>
 
-- VS Code **1.101.0 or newer**, desktop or a Node-based remote Extension Host. VS Code 1.101 introduced Node 22 in both desktop and remote hosts. A browser-only host such as vscode.dev without a remote host is unsupported.
-- A **trusted workspace** to render. Restricted Mode displays escaped source with a trust notice and does not start the renderer.
+Renders locally, without an account or API key. Requires VS Code 1.101 or newer and a trusted workspace; the first preview takes a few seconds to initialize.
 
-| Layer | Supported environment | Verification boundary |
-| --- | --- | --- |
-| Contributor build and VSIX packaging | Node.js 22; npm 10 on Linux, Windows and macOS | CI targets all three systems with Node 22 |
-| Installed extension | VS Code 1.101+ desktop or Node-based remote Extension Host | VS Code supplies its own Node runtime; a separate Node/npm install is not required |
-| Markdown preview | VS Code's built-in preview webview | Host tests target the real Extension Host; this is not a Chromium/Firefox/WebKit browser product |
+Want to move shapes and edit on a canvas? Open the same diagram in [DrawMotive for VS Code](https://github.com/drawmotive/vscode-drawmotive).
 
-The 2026-10-01 standalone audit ran Linux Node 22.23.2/npm 10.9.8 unit tests.
-That audit did not execute real Extension Host tests or Windows/macOS builds.
-
-Independent of the DrawMotive drawing editor. Uses public `@drawmotive/textgraph@0.2.2-alpha.2`, bundled with its runtime and fonts. Rendering is local; no service, API key, separate npm installation, or private C#/WASM build is needed.
-
-## Errors and limits
-
-SDK syntax diagnostics appear beside the source. Editing triggers a new render. The bundled SDK renders inline groups including `A -> {}` and `A -> {{x}}`. Each render has a 15-second deadline and the Worker is terminated on timeout. Other diagrams continue in a fresh Worker. A timeout is an operational error, not a syntax diagnosis.
-
-Each diagram is limited to 64 KiB of source and a maximum width of 2048 pixels. Complex diagrams may hit the deadline. Bundled SDK fonts determine available glyphs; custom font packs are not yet configurable.
-
-## Security and lifecycle
-
-The preview receives PNG data URIs and escaped diagnostic text. No preview JavaScript, browser Worker, external server, or CSP relaxation is needed. Workspace source is SDK input; never executable JavaScript.
-
-Changed or removed diagrams cancel obsolete work. Closing a document releases its cache. The Worker shuts down after ten idle seconds; inactive caches expire after five minutes because the Markdown extension has no public preview-close event. Deactivation terminates outstanding work.
-
-## Install a VSIX
-
-Run **Extensions: Install from VSIX…** and select `textgraph-markdown-0.2.1.vsix`, or:
-
-```sh
-code --install-extension textgraph-markdown-0.2.1.vsix
-```
-
-## Development
-
-From this repository’s independent `vscode` npm package:
-
-```sh
-npm ci --workspaces=false
-npm test
-npm run build
-npm run package
-npm run test:host
-```
-
-The host test downloads VS Code 1.101.0, installs the actual VSIX into isolated profiles, and tests built-in Markdown Preview through the real Extension Host and webview. Linux CI uses `xvfb-run -a npm run test:host`; a desktop display also works. Set `VSCODE_VERSION=stable` for the current stable host. No C# project is built.
-
-These commands create a local VSIX without publishing. `npm run release:check`
-and publication commands retain coordinated release eligibility checks, which
-can defer publication while ordinary builds and packaging remain available. See the repository's
-[Contributing](../CONTRIBUTING.md) and [NOTICE](../NOTICE).
-Vulnerability reports follow [Security reporting](../SECURITY.md).
-
-See [the project repository](https://github.com/drawmotive/markdown-textgraph) and [the SDK](https://github.com/drawmotive/textgraph).
+[Report an issue](https://github.com/drawmotive/textgraph/issues) · [Development and support](docs/development.md) · [Project](https://github.com/drawmotive/markdown-textgraph)

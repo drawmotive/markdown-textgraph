@@ -4,4 +4,6 @@
 !CHANGELOG.md
 !LICENSE
 !media/**
+!examples/**
+!docs/**
 !dist/**
