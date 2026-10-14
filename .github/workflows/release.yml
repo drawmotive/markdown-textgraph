@@ -83,6 +83,8 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -91,9 +93,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-      # Retained publication uses the registered OIDC identity, as the other
-      # coordinated products do. A legacy bootstrap token must not own it.
       - run: npm install --global npm@11.19.1
+      # npm attempts OIDC first. The optional credential keeps publication
+      # available when the package owner has not configured trusted publishing.
+      - name: Configure optional npm token fallback
+        if: env.NODE_AUTH_TOKEN != ''
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+          const file = path.join(process.env.RUNNER_TEMP, 'markdown-textgraph.npmrc');
+          writeFileSync(file, '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}\n', { mode: 0o600 });
+          appendFileSync(process.env.GITHUB_ENV, `NPM_CONFIG_USERCONFIG=${file}\n`);
+          JS
       - name: Download the reviewed archive without rebuilding
         env:
           GH_TOKEN: ${{ github.token }}
@@ -105,5 +117,4 @@ jobs:
           ARTIFACT_INTEGRITY: ${{ inputs.artifact_integrity }}
           ARCHIVE_FILE: ${{ inputs.archive_file }}
           RECEIPT_FILE: github-evidence.json
-          NPM_CONFIG_LOGLEVEL: verbose
         run: node ./.release/remote-npm.mjs .retained .
