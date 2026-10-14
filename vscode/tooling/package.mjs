@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { checkComponent } from '../.release/check.cjs';
+import { previewArguments } from './release-policy.cjs';
 
 // Local VSIX packaging checks exact public build inputs. Publication separately
 // enforces release eligibility; a deferred release still permits contribution builds.
@@ -10,6 +11,6 @@ const errors=checkComponent(root,{build:true});
 if(errors.length) throw new Error(errors.join('\n'));
 const target=JSON.parse(await readFile(new URL('../.release/target.json',import.meta.url),'utf8'));
 const cli=fileURLToPath(import.meta.resolve('@vscode/vsce/vsce'));
-const result=spawnSync(process.execPath,[cli,'package','--no-dependencies',...(target.channel==='alpha'?['--pre-release']:[])],{cwd:root,stdio:'inherit'});
+const result=spawnSync(process.execPath,[cli,'package','--no-dependencies',...previewArguments(target)],{cwd:root,stdio:'inherit'});
 if(result.error) throw result.error;
 process.exitCode=result.status??1;

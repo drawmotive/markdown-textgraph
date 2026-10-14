@@ -62,7 +62,8 @@
     "publish:vsix": "node tooling/publish.mjs",
     "release:check": "node .release/check.cjs --ready",
     "build:dev": "node tooling/development.mjs build",
-    "package:dev": "node tooling/development.mjs package"
+    "package:dev": "node tooling/development.mjs package",
+    "test:release": "node --test --test-concurrency=1 test/release-policy.test.mjs"
   },
   "dependencies": {
     "@drawmotive/textgraph": "0.2.2-alpha.9"
