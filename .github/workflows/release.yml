@@ -91,7 +91,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org/
+      # Retained publication uses the registered OIDC identity, as the other
+      # coordinated products do. A legacy bootstrap token must not own it.
       - run: npm install --global npm@11.19.1
       - name: Download the reviewed archive without rebuilding
         env:
@@ -104,5 +105,5 @@ jobs:
           ARTIFACT_INTEGRITY: ${{ inputs.artifact_integrity }}
           ARCHIVE_FILE: ${{ inputs.archive_file }}
           RECEIPT_FILE: github-evidence.json
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_LOGLEVEL: verbose
         run: node ./.release/remote-npm.mjs .retained .
