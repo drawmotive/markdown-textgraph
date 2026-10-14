@@ -113,7 +113,7 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
   if (flags.length > 1 || flags.some(flag => !["true", "false"].includes(flag.Value))) throw new Error("VSIX manifest contains ambiguous prerelease metadata.");
   const preRelease = flags[0]?.Value === "true";
   if (preRelease !== (target.channel !== "stable")) throw new Error("VSIX prerelease channel does not match the release target; package using the intended channel.");
-  return { name: pkg.name, version: target.version, publisher: pkg.publisher, preRelease };
+  return { name: pkg.name, version: target.version, publisher: pkg.publisher, preRelease, ...(target.schemaVersion === 2 ? { releaseSchemaVersion: 2 } : {}) };
 }
 
 function fileTree(root) {
