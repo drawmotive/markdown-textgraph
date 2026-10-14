@@ -6,12 +6,14 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import test from "node:test";
 import { ownedCommands } from "./support/command.mjs";
+import { consumerLock } from "./support/consumer-lock.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const manifest = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
+const locked = JSON.parse(await readFile(new URL("../package-lock.json", import.meta.url), "utf8"));
+const markdown14 = JSON.parse(await readFile(new URL("./fixtures/markdown14/package-lock.json", import.meta.url), "utf8"));
 const npmCli = process.env.npm_execpath ?? path.resolve(path.dirname(process.execPath), "../lib/node_modules/npm/bin/npm-cli.js");
-const registryInstall = [npmCli, "install", "--ignore-scripts", "--registry=https://registry.npmjs.org", "--no-audit", "--no-fund"];
-const development = name => name + "@" + manifest.devDependencies[name];
+const registryInstall = [npmCli, "ci", "--ignore-scripts", "--workspaces=false", "--registry=https://registry.npmjs.org", "--no-audit", "--no-fund"];
 
 async function compileConsumer(temp, command) {
   const require = createRequire(path.join(temp, "package.json"));
@@ -19,30 +21,35 @@ async function compileConsumer(temp, command) {
   await command([path.join(path.dirname(require.resolve("typescript/package.json")), "bin/tsc"), "--noEmit", "--strict", "--types", "node", "--module", "NodeNext", "--moduleResolution", "NodeNext", "--target", "ES2022", "consumer.ts"], temp, "compile packed consumer types");
 }
 
-async function consumerFixture(t, prefix) {
+async function consumerFixture(t, prefix, names, compatibility) {
   // Commands drain before removal even when Node cancels the test body.
   const command = ownedCommands(t);
   const temp = await realpath(await mkdtemp(path.join(tmpdir(), prefix)));
   t.after(() => rm(temp, { recursive: true, force: true }));
   const [pack] = JSON.parse(await command([npmCli, "pack", "--ignore-scripts", "--workspaces=false", "--json", "--pack-destination", temp], root, "pack consumer artifact"));
-  await writeFile(path.join(temp, "package.json"), JSON.stringify({ private: true, type: "module" }));
+  const inputs = consumerLock(manifest, locked, pack, names, compatibility);
+  await writeFile(path.join(temp, "package.json"), JSON.stringify(inputs.manifest));
+  await writeFile(path.join(temp, "package-lock.json"), JSON.stringify(inputs.lock));
   return { command, temp, pack };
 }
 
 async function registryLock(temp) {
   const lock = JSON.parse(await readFile(path.join(temp, "package-lock.json"), "utf8"));
-  assert.match(lock.packages["node_modules/@drawmotive/textgraph"].resolved, /^https:/);
+  const sdk = lock.packages["node_modules/@drawmotive/textgraph"];
+  assert.match(sdk.resolved, /^https:\/\/registry[.]npmjs[.]org\//);
+  assert.equal(sdk.version, manifest.dependencies["@drawmotive/textgraph"]);
+  assert.equal(sdk.integrity, locked.packages["node_modules/@drawmotive/textgraph"].integrity);
   return lock;
 }
 
 test("packed core entries install with registry SDK and types without VitePress", { timeout: 90000 }, async t => {
-  const { command, temp, pack } = await consumerFixture(t, "markdown-textgraph-consumer-");
+  const { command, temp, pack } = await consumerFixture(t, "markdown-textgraph-consumer-", ["markdown-it", "@types/markdown-it", "@types/node", "typescript"]);
   const files = pack.files.map(file => file.path);
   assert.ok(files.includes("src/worker/render.js"));
   assert.ok(files.includes("src/index.d.ts"));
   assert.ok(files.includes("LICENSE"));
   assert.ok(!files.some(file => new RegExp("[.]local|generated/wasm|node_modules|test/|tooling/").test(file)));
-  await command([...registryInstall, path.join(temp, pack.filename), ...["markdown-it", "@types/markdown-it", "@types/node", "typescript"].map(development)], temp, "install packed core registry consumer");
+  await command(registryInstall, temp, "install packed core registry consumer");
   const require = createRequire(path.join(temp, "package.json"));
   assert.throws(() => require.resolve("vitepress"), { code: "MODULE_NOT_FOUND" });
   assert.ok(require.resolve("@drawmotive/textgraph/node").startsWith(temp));
@@ -53,8 +60,8 @@ test("packed core entries install with registry SDK and types without VitePress"
 });
 
 test("packed VitePress entry installs with registry SDK and builds public PNG assets", { timeout: 90000 }, async t => {
-  const { command, temp, pack } = await consumerFixture(t, "markdown-textgraph-vitepress-consumer-");
-  await command([...registryInstall, path.join(temp, pack.filename), development("markdown-it"), development("vitepress")], temp, "install packed VitePress registry consumer");
+  const { command, temp } = await consumerFixture(t, "markdown-textgraph-vitepress-consumer-", ["markdown-it", "vitepress"]);
+  await command(registryInstall, temp, "install packed VitePress registry consumer");
   await registryLock(temp);
   const require = createRequire(path.join(temp, "package.json"));
   await mkdir(path.join(temp, ".vitepress"));
@@ -66,8 +73,8 @@ test("packed VitePress entry installs with registry SDK and builds public PNG as
 });
 
 test("packed public types support Markdown 14 consumers with existing 14.1 typings", { timeout: 90000 }, async t => {
-  const { command, temp, pack } = await consumerFixture(t, "markdown-textgraph-consumer-14-");
-  await command([...registryInstall, path.join(temp, pack.filename), "markdown-it@14.3.2", "@types/markdown-it@14.1.2", ...["@types/node", "typescript"].map(development)], temp, "install packed Markdown 14 registry consumer");
+  const { command, temp } = await consumerFixture(t, "markdown-textgraph-consumer-14-", ["markdown-it", "@types/markdown-it", "@types/node", "typescript"], markdown14);
+  await command(registryInstall, temp, "install packed Markdown 14 registry consumer");
   const lock = await registryLock(temp);
   assert.equal(lock.packages["node_modules/markdown-it"].version, "14.3.2");
   assert.equal(lock.packages["node_modules/@types/markdown-it"].version, "14.1.2");

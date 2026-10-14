@@ -1,0 +1,8 @@
+{
+  "name": "markdown-textgraph-markdown14-fixture",
+  "private": true,
+  "dependencies": {
+    "markdown-it": "14.3.2",
+    "@types/markdown-it": "14.1.2"
+  }
+}

@@ -31,7 +31,9 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - run: npm pack --json
+      # These explicit gates are the same checks prepack owns for ordinary users.
+      - run: npm run release:check -- --installed
+      - run: npm pack --ignore-scripts --json
       - uses: actions/upload-artifact@v4
         with:
           name: markdown-npm-${{ matrix.os }}-node-${{ matrix.node }}
