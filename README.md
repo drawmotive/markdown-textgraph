@@ -7,7 +7,7 @@ For VS Code’s built-in Markdown Preview, see the independent [TextGraph extens
 
 Render `textgraph` fenced code blocks as static PNG diagrams in markdown-it and VitePress. Rendering runs in a Node Worker through the public `@drawmotive/textgraph` package. Visitors receive images without downloading a diagram runtime.
 
-Release `0.2.2-alpha.2` uses the published TextGraph SDK `0.2.2-alpha.2`, pinned in the independent lockfile.
+The adapter uses the public TextGraph SDK pinned in its independent lockfile. New releases share a numeric version with the SDK: patch `0` is stable and patches `1` through `9` are previews on npm’s `alpha` channel. Historical suffixed versions remain available.
 
 ## Requirements
 
@@ -28,7 +28,7 @@ on Node; it is not a browser-side TextGraph runtime.
 
 ## markdown-it
 
-Install `@drawmotive/markdown-it-textgraph@0.2.2-alpha.2` and `markdown-it`.
+Install `@drawmotive/markdown-it-textgraph@alpha` and `markdown-it` for the current preview. Pin the resolved numeric version for reproducible builds.
 
 ```javascript
 import MarkdownIt from "markdown-it";
