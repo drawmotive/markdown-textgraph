@@ -2,7 +2,7 @@
   "name": "textgraph-markdown",
   "displayName": "TextGraph for Markdown Preview",
   "description": "Write the flow. See the diagram. Turn text in Markdown into live diagrams beside your documentation in VS Code.",
-  "version": "0.2.5",
+  "version": "0.2.9",
   "publisher": "drawmotive",
   "license": "MIT",
   "repository": {
@@ -65,7 +65,7 @@
     "package:dev": "node tooling/development.mjs package"
   },
   "dependencies": {
-    "@drawmotive/textgraph": "0.2.2-alpha.6"
+    "@drawmotive/textgraph": "0.2.2-alpha.9"
   },
   "devDependencies": {
     "@vscode/test-electron": "^3.1.0",
