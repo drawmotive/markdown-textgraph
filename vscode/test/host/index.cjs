@@ -5,7 +5,17 @@ const { createHash } = require('node:crypto');
 const vscode = require('vscode');
 const { chromium } = require('playwright');
 const { PNG } = require('pngjs');
+const { captureSourceHash, capturePreviewReady } = require('./capture.cjs');
 let activeBrowser;
+
+// Capture uses ordinary development-host mode to retain actual window bounds.
+// Normal host tests remain owned by extensionTestsPath, avoiding duplicate runs.
+exports.activate = function () {
+  if (process.env.TEXTGRAPH_EXAMPLE_CAPTURE) exports.run().then(
+    () => vscode.commands.executeCommand('workbench.action.quit'),
+    error => { console.error(error); return vscode.commands.executeCommand('workbench.action.quit'); },
+  );
+};
 
 // The driver is a separate development extension; the product must be loaded
 // from the installed VSIX in this launch's isolated extensions directory.
@@ -25,12 +35,38 @@ exports.run = async function run() {
     evidence.extension = { id: extension.id, version: extension.packageJSON.version, path: extension.extensionPath };
     browser = await retry(() => chromium.connectOverCDP(process.env.TEXTGRAPH_TEST_CDP), 15000, 'connect to actual VS Code Chromium');
     activeBrowser = browser;
-    const uri = vscode.Uri.file(path.join(process.env.TEXTGRAPH_TEST_WORKSPACE, 'preview.md'));
+    if (process.env.TEXTGRAPH_EXAMPLE_CAPTURE) {
+      const page = browser.contexts().flatMap(context => context.pages()).find(page => page.url().includes('workbench'));
+      assert.ok(page, 'Capture requires the actual VS Code workbench');
+      await page.waitForFunction(() => innerWidth >= 1599 && innerHeight >= 1399);
+    }
+    const uri = vscode.Uri.file(path.join(process.env.TEXTGRAPH_TEST_WORKSPACE, process.env.TEXTGRAPH_EXAMPLE_CAPTURE ? 'online-order.md' : 'preview.md'));
     const document = await vscode.workspace.openTextDocument(uri);
     const original = document.getText();
     await vscode.window.showTextDocument(document);
     await vscode.commands.executeCommand('markdown.showPreviewToSide', uri);
     preview = await findPreview(browser);
+    if (process.env.TEXTGRAPH_EXAMPLE_CAPTURE) {
+      const source = await fs.readFile(path.join(process.env.TEXTGRAPH_EXAMPLE_CAPTURE, 'examples/online-order.textgraph'), 'utf8');
+      const sourceHash = captureSourceHash(original, source);
+      preview = await waitFor(preview, capturePreviewReady, 'canonical example in actual Markdown Preview', 90000, { sourceHash });
+      const page = preview.page();
+      for (const selector of ['.part.titlebar', '.part.activitybar', '.part.sidebar', '.part.statusbar', '.tabs-container']) {
+        await page.locator(selector).first().waitFor({ state: 'visible' });
+      }
+      const image = path.join(process.env.TEXTGRAPH_EXAMPLE_CAPTURE, 'media/online-order-demo.png');
+      const bytes = await page.screenshot({ path: image });
+      const bounds = await page.evaluate(() => ({ width: innerWidth, height: innerHeight }));
+      await fs.writeFile(image.replace('.png', '.capture.json'), JSON.stringify({
+        application: 'Visual Studio Code', version: vscode.version,
+        extension: extension.packageJSON.version, ...bounds,
+        sha256: createHash('sha256').update(bytes).digest('hex'),
+        sourceSha256: sourceHash, source: 'online-order.textgraph',
+      }, null, 2) + '\n');
+      evidence.checks.push('canonical source and rendered output inside actual VS Code workbench');
+      await fs.writeFile(path.join(artifacts, 'result.json'), JSON.stringify(evidence, null, 2));
+      return;
+    }
     preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview').length === 2, 'two TextGraph fences');
     if (!expectedTrust) {
       preview = await waitFor(preview, () => document.querySelectorAll('.textgraph-preview[data-state="untrusted"]').length === 2, 'restricted mode source fallback');

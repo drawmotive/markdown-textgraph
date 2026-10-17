@@ -4,15 +4,35 @@ New releases use the same numeric version for the SDK, npm packages, and VSIX. P
 
 ## Regenerate the introduction example
 
-After installing this package's locked dependencies, run `npm run examples:render`.
-From the parent DrawMotive workspace, use
-`npm run component -- vscode-markdown examples:render`. Playwright's Chromium
-must be installed to capture the source-and-diagram image.
+From the parent workspace, run these operations serially:
 
-The command reads `examples/online-order.textgraph`, checks that the Markdown
-example, README snippet, and playground link agree, and renders through the
-extension's own Worker with its normal deadline. The generated diagram and
-combined introduction image are saved under `media/`.
+```bash
+npm run component -- vscode-markdown examples:render
+npm run component -- vscode-markdown package
+npm run component -- vscode-markdown examples:capture
+npm run docs:previews -- sync
+npm run docs:previews -- check
+```
+
+Rendering checks source and versioned Playground links through the extension's
+real Worker. Synchronization replaces its ordinary overview with the canonical
+shared bytes. Capture uses the packaged VSIX in an isolated trusted workspace,
+opens the canonical Markdown beside built-in Preview, waits for the rendered
+image, and captures the top-level VS Code workbench. Title bar, activity bar,
+sidebar, tabs and status bar must remain visible. No HTML mockup is used.
+Capture uses ordinary development-host mode and a 1600 × 1400 isolated window
+so the complete overview fits beside its source. Normal host tests keep their
+test runner; the launcher requires the capture driver's canonical-source result.
+
+The host launcher downloads desktop VS Code 1.101.0 by default. For offline use,
+VSCODE_EXECUTABLE selects an existing desktop executable. TEXTGRAPH_VSIX selects
+an existing package. Linux captures always use isolated Xvfb; ordinary host tests
+also use it when DISPLAY is absent. Capture evidence next to
+the PNG records host version, dimensions and source/pixel hashes. Visually inspect
+readability and host surroundings; missing prerequisites must fail the operation.
+For interrupted Linux x64 downloads, the parent operation
+`npm run docs:capture -- vscode:prepare` resumes and checksum-verifies the pinned
+archive. Use its printed VSCODE_EXECUTABLE path for either extension.
 
 ## Requirements
 

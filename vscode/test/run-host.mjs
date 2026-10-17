@@ -9,13 +9,14 @@ import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath } from '
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const version = process.env.VSCODE_VERSION || '1.101.0';
+const capture = process.argv.includes('--capture');
 const manifest = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
 const vsix = process.env.TEXTGRAPH_VSIX || path.join(root, `${manifest.name}-${manifest.version}.vsix`);
 const artifactRoot = process.env.TEXTGRAPH_HOST_ARTIFACTS || await mkdtemp(path.join(os.tmpdir(), 'textgraph-vsix-host-'));
 await mkdir(artifactRoot, { recursive: true });
 await readFile(vsix);
-const executable = await downloadAndUnzipVSCode(version);
-const modes = process.env.TEXTGRAPH_HOST_MODE ? [process.env.TEXTGRAPH_HOST_MODE] : ['trusted', 'untrusted'];
+const executable = process.env.VSCODE_EXECUTABLE || await downloadAndUnzipVSCode(version);
+const modes = capture ? ['trusted'] : process.env.TEXTGRAPH_HOST_MODE ? [process.env.TEXTGRAPH_HOST_MODE] : ['trusted', 'untrusted'];
 assert.ok(modes.every(mode => ['trusted', 'untrusted'].includes(mode)), 'TEXTGRAPH_HOST_MODE must be trusted or untrusted');
 console.log(`Real VSIX integration: VS Code ${version}; artifacts ${artifactRoot}`);
 
@@ -24,11 +25,13 @@ for (const mode of modes) {
   const userData = path.join(runRoot, 'user-data');
   const extensions = path.join(runRoot, 'extensions');
   const workspace = path.join(runRoot, 'workspace');
+  const runtime = path.join(runRoot, 'runtime');
   await mkdir(path.join(userData, 'User'), { recursive: true });
   await mkdir(extensions, { recursive: true });
   await mkdir(workspace, { recursive: true });
-  await copyFile(path.join(root, 'test/host/preview.md'), path.join(workspace, 'preview.md'));
-  await writeFile(path.join(workspace, 'ordinary.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64'));
+  await mkdir(runtime, { mode: 0o700 });
+  await copyFile(path.join(root, capture ? 'examples/online-order.md' : 'test/host/preview.md'), path.join(workspace, capture ? 'online-order.md' : 'preview.md'));
+  if (!capture) await writeFile(path.join(workspace, 'ordinary.png'), Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64'));
   await writeFile(path.join(userData, 'User/settings.json'), JSON.stringify({
     'security.workspace.trust.enabled': mode === 'untrusted',
     'security.workspace.trust.startupPrompt': 'never',
@@ -38,28 +41,41 @@ for (const mode of modes) {
     'workbench.tips.enabled': false,
     'git.openRepositoryInParentFolders': 'never',
     'window.restoreWindows': 'none',
+    'window.titleBarStyle': 'custom', 'window.newWindowDimensions': 'maximized',
+    'workbench.statusBar.visible': true, 'workbench.activityBar.location': 'default',
     'extensions.autoUpdate': false,
     'extensions.autoCheckUpdates': false,
     'telemetry.telemetryLevel': 'off',
     'update.mode': 'none',
     'markdown.preview.security.level': 'strict',
   }, null, 2));
+  if (capture) {
+    // Seed actual development-host bounds in this fresh profile; Xvfb has no WM.
+    await mkdir(path.join(userData, 'User/globalStorage'), { recursive: true });
+    await writeFile(path.join(userData, 'User/globalStorage/storage.json'), JSON.stringify({ windowsState: {
+      lastPluginDevelopmentHostWindow: { uiState: { mode: 1, x: 0, y: 0, width: 1600, height: 1400 } }, openedWindows: [],
+    } }));
+  }
   const [cli, ...cliArgs] = resolveCliArgsFromVSCodeExecutablePath(executable, { reuseMachineInstall: true });
-  await command(cli, [...cliArgs, '--no-sandbox', '--user-data-dir', userData, '--extensions-dir', extensions, '--install-extension', vsix, '--force']);
+  const environment = { ...process.env, XDG_RUNTIME_DIR: runtime };
+  await command(cli, [...cliArgs, '--no-sandbox', '--user-data-dir', userData, '--extensions-dir', extensions, '--install-extension', vsix, '--force'], environment);
   const port = await freePort();
   // test-electron's runTests always adds --disable-workspace-trust. Spawn the
   // downloaded real product directly so the restricted profile is genuine.
-  await command(executable, [
+  const launchArgs = [
     workspace, '--user-data-dir', userData, '--extensions-dir', extensions,
     '--extensionDevelopmentPath=' + path.join(root, 'test/host'),
-    '--extensionTestsPath=' + path.join(root, 'test/host/index.cjs'),
+    ...(capture ? [] : ['--extensionTestsPath=' + path.join(root, 'test/host/index.cjs')]),
     '--no-sandbox', '--disable-gpu', '--disable-gpu-sandbox',
     '--skip-welcome', '--skip-release-notes', '--disable-updates',
     '--use-inmemory-secretstorage',
     '--remote-debugging-port=' + port, '--remote-debugging-address=127.0.0.1',
     ...(mode === 'trusted' ? ['--disable-workspace-trust'] : []),
-  ], {
-    ...process.env,
+  ];
+  const headlessLinux = process.platform === 'linux' && (capture || !process.env.DISPLAY);
+  await command(headlessLinux ? 'xvfb-run' : executable, headlessLinux ? ['-a', '-s', '-screen 0 1600x' + (capture ? '1400' : '1200') + 'x24 -nolisten unix', executable, ...launchArgs] : launchArgs, {
+    ...environment,
+    TEXTGRAPH_EXAMPLE_CAPTURE: capture ? root : '',
     TEXTGRAPH_TEST_TRUST: mode,
     TEXTGRAPH_TEST_WORKSPACE: workspace,
     TEXTGRAPH_TEST_EXTENSIONS: extensions,
@@ -67,6 +83,9 @@ for (const mode of modes) {
     TEXTGRAPH_TEST_ARTIFACTS: runRoot,
     TEXTGRAPH_TEST_VSCODE: version,
   });
+  const result = JSON.parse(await readFile(path.join(runRoot, 'result.json'), 'utf8'));
+  assert.ok(!result.error, result.error);
+  if (capture) assert.equal(result.checks.length, 1, 'Capture driver must verify the canonical example');
 }
 console.log(`VSIX Markdown Preview checks passed. Evidence: ${artifactRoot}`);
 

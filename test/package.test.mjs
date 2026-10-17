@@ -48,6 +48,7 @@ test("packed core entries install with registry SDK and types without VitePress"
   assert.ok(files.includes("src/worker/render.js"));
   assert.ok(files.includes("src/index.d.ts"));
   assert.ok(files.includes("LICENSE"));
+  for (const file of ["examples/online-order.png", "examples/online-order.textgraph"]) assert.ok(files.includes(file), "Missing README example: " + file);
   assert.ok(!files.some(file => new RegExp("[.]local|generated/wasm|node_modules|test/|tooling/").test(file)));
   await command(registryInstall, temp, "install packed core registry consumer");
   const require = createRequire(path.join(temp, "package.json"));

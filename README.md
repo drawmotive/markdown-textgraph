@@ -9,6 +9,50 @@ Render `textgraph` fenced code blocks as static PNG diagrams in markdown-it and 
 
 The adapter uses the public TextGraph SDK pinned in its independent lockfile. New releases share a numeric version with the SDK: patch `0` is stable and patches `1` through `9` are previews on npm’s `alpha` channel. Historical suffixed versions remain available.
 
+## Example output
+
+<!-- public-preview:start -->
+
+````markdown
+```textgraph
+shopping(info): Shopping {
+  browse -> checkout
+}
+
+processing(primary): Behind the scenes {
+  payment -> saved : Yes
+  payment ->(dashed warning) retry : No
+  retry ->(dashed warning) payment
+  saved -> email
+}
+
+delivery(success): Delivery {
+  pack -> ship -> arrived
+}
+
+checkout -> payment
+saved -> pack
+
+browse: Browse the shop
+checkout: Place an order
+payment(diamond fill primary): Payment\naccepted?
+retry(warning): Try another\npayment
+saved: Save the order
+email: Send confirmation\nemail
+pack: Prepare the package
+ship: Ship the package
+arrived(ellipse fill success): Package arrives
+```
+````
+
+![Online order: shopping, a payment decision and retry, confirmation, and delivery.](examples/online-order.png)
+
+[Open the full diagram](examples/online-order.png) · [Copy the source](examples/online-order.textgraph) · [Try this diagram](https://textgraph.dev/playground?d=1.eJxtkcFqwzAQRO_6ij3ah_yADimEnksgvRRy2UqbaIm9EivHwZT-e5GlJAR6MlppZmeec4gpsZw7llPsLRzaGX4MwLfGWybYbMEFcpd4ncyvMUmjo5yLKCmPqEtvYUeBxcMUCLIjobwaJFxGkqk4ZJzJg4Uvyi8XncccyMMNVVjOPShNuoCFj2igHf551QwMNOPNFmhEHkpATwPPpEuXr64k7S28t1FL5S5rpMCpfFGVZ_JFeu9ZxvcVjwVFZ0yFYmFX4ayNQ0wPqYX9gI4ABaJ6UtN8Os84RvFw4mGAJ7l9vT4KOkdpIv9m1tbdvauFT10AJU6B9CgvsSwccK4h6rIVgoUDiQcX5cQ64sRRjlLxlA4W9koJterKBM9kCo3y_zm9jBucjoaBU6aa_gl2X581htn8AYyRzTM)
+
+<!-- public-preview:end -->
+
+For Chinese, Japanese, and color emoji, see the [packaged font examples](https://github.com/drawmotive/textgraph/tree/main/language-packs#language-coverage).
+
 ## Requirements
 
 - Node.js 22.12.0+ in the 22 line; npm 10.

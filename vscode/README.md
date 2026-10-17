@@ -4,7 +4,7 @@
 
 Turn a few lines in your Markdown into a diagram people can follow, right beside your text in VS Code.
 
-[Install TextGraph](https://marketplace.visualstudio.com/items?itemName=drawmotive.textgraph-markdown) · [Try this diagram](https://textgraph.dev/playground#source=shopping%28info%29%3A%20Shopping%20%7B%0A%20%20browse%20-%3E%20checkout%0A%7D%0A%0Aprocessing%28primary%29%3A%20Behind%20the%20scenes%20%7B%0A%20%20payment%20-%3E%20saved%20%3A%20Yes%0A%20%20payment%20-%3E%28dashed%20warning%29%20retry%20%3A%20No%0A%20%20retry%20-%3E%28dashed%20warning%29%20payment%0A%20%20saved%20-%3E%20email%0A%7D%0A%0Adelivery%28success%29%3A%20Delivery%20%7B%0A%20%20pack%20-%3E%20ship%20-%3E%20arrived%0A%7D%0A%0Acheckout%20-%3E%20payment%0Asaved%20-%3E%20pack%0A%0Abrowse%3A%20Browse%20the%20shop%0Acheckout%3A%20Place%20an%20order%0Apayment%28diamond%20fill%20primary%29%3A%20Payment%5Cnaccepted%3F%0Aretry%28warning%29%3A%20Try%20another%5Cnpayment%0Asaved%3A%20Save%20the%20order%0Aemail%3A%20Send%20confirmation%5Cnemail%0Apack%3A%20Prepare%20the%20package%0Aship%3A%20Ship%20the%20package%0Aarrived%28ellipse%20fill%20success%29%3A%20Package%20arrives%0A) · [Open the example Markdown](examples/online-order.md)
+[Install TextGraph](https://marketplace.visualstudio.com/items?itemName=drawmotive.textgraph-markdown) · [Try this diagram](https://textgraph.dev/playground?d=0.c2hvcHBpbmcoaW5mbyk6IFNob3BwaW5nIHsKICBicm93c2UgLT4gY2hlY2tvdXQKfQoKcHJvY2Vzc2luZyhwcmltYXJ5KTogQmVoaW5kIHRoZSBzY2VuZXMgewogIHBheW1lbnQgLT4gc2F2ZWQgOiBZZXMKICBwYXltZW50IC0-KGRhc2hlZCB3YXJuaW5nKSByZXRyeSA6IE5vCiAgcmV0cnkgLT4oZGFzaGVkIHdhcm5pbmcpIHBheW1lbnQKICBzYXZlZCAtPiBlbWFpbAp9CgpkZWxpdmVyeShzdWNjZXNzKTogRGVsaXZlcnkgewogIHBhY2sgLT4gc2hpcCAtPiBhcnJpdmVkCn0KCmNoZWNrb3V0IC0-IHBheW1lbnQKc2F2ZWQgLT4gcGFjawoKYnJvd3NlOiBCcm93c2UgdGhlIHNob3AKY2hlY2tvdXQ6IFBsYWNlIGFuIG9yZGVyCnBheW1lbnQoZGlhbW9uZCBmaWxsIHByaW1hcnkpOiBQYXltZW50XG5hY2NlcHRlZD8KcmV0cnkod2FybmluZyk6IFRyeSBhbm90aGVyXG5wYXltZW50CnNhdmVkOiBTYXZlIHRoZSBvcmRlcgplbWFpbDogU2VuZCBjb25maXJtYXRpb25cbmVtYWlsCnBhY2s6IFByZXBhcmUgdGhlIHBhY2thZ2UKc2hpcDogU2hpcCB0aGUgcGFja2FnZQphcnJpdmVkKGVsbGlwc2UgZmlsbCBzdWNjZXNzKTogUGFja2FnZSBhcnJpdmVzCg) · [Open the example Markdown](examples/online-order.md)
 
 ![TextGraph source beside its rendered online-order diagram: Shopping, Behind the scenes, and Delivery, including a payment decision, a retry loop, and a confirmation email.](media/online-order-demo.png)
 
@@ -16,12 +16,9 @@ Turn a few lines in your Markdown into a diagram people can follow, right beside
 
 Your diagram stays with your documentation as readable text.
 
-<details>
-<summary>Copy the complete Markdown example</summary>
+<!-- public-preview:start -->
 
 ````markdown
-# What happens when you place an online order?
-
 ```textgraph
 shopping(info): Shopping {
   browse -> checkout
@@ -53,9 +50,13 @@ arrived(ellipse fill success): Package arrives
 ```
 ````
 
-[TextGraph source](examples/online-order.textgraph)
+![Online order: shopping, a payment decision and retry, confirmation, and delivery.](media/online-order.png)
 
-</details>
+[Open the full diagram](media/online-order.png) · [Copy the source](examples/online-order.textgraph) · [Try this diagram](https://textgraph.dev/playground?d=1.eJxtkcFqwzAQRO_6ij3ah_yADimEnksgvRRy2UqbaIm9EivHwZT-e5GlJAR6MlppZmeec4gpsZw7llPsLRzaGX4MwLfGWybYbMEFcpd4ncyvMUmjo5yLKCmPqEtvYUeBxcMUCLIjobwaJFxGkqk4ZJzJg4Uvyi8XncccyMMNVVjOPShNuoCFj2igHf551QwMNOPNFmhEHkpATwPPpEuXr64k7S28t1FL5S5rpMCpfFGVZ_JFeu9ZxvcVjwVFZ0yFYmFX4ayNQ0wPqYX9gI4ABaJ6UtN8Os84RvFw4mGAJ7l9vT4KOkdpIv9m1tbdvauFT10AJU6B9CgvsSwccK4h6rIVgoUDiQcX5cQ64sRRjlLxlA4W9koJterKBM9kCo3y_zm9jBucjoaBU6aa_gl2X581htn8AYyRzTM)
+
+<!-- public-preview:end -->
+
+For Chinese, Japanese, and color emoji, see the [packaged font examples](https://github.com/drawmotive/textgraph/tree/main/language-packs#language-coverage).
 
 Connections inside a group introduce its local nodes and may style endpoints
 inline. Keep standalone node labels or styles at the root, in any order.

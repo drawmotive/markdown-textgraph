@@ -4,5 +4,7 @@
   "version": "0.0.0",
   "publisher": "drawmotive-test",
   "engines": { "vscode": "^1.101.0" },
-  "private": true
+  "private": true,
+  "main": "index.cjs",
+  "activationEvents": ["onStartupFinished"]
 }
