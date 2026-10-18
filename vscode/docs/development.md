@@ -34,6 +34,17 @@ For interrupted Linux x64 downloads, the parent operation
 `npm run docs:capture -- vscode:prepare` resumes and checksum-verifies the pinned
 archive. Use its printed VSCODE_EXECUTABLE path for either extension.
 
+## Public description assets
+
+Keep README image and example paths relative to this package. The manifest's
+`vsce.baseContentUrl` and `vsce.baseImagesUrl` retain the repository's `vscode/`
+directory when VSIX packaging rewrites those paths for Marketplace. `vsce` does
+not infer that directory from `repository.directory`. These defaults apply to
+standalone, development and coordinated release packaging. The development
+archive test checks the rewritten image and source links in the actual VSIX.
+Marketplace continues to display the previous description until a new version
+is published.
+
 ## Requirements
 
 - VS Code **1.101.0 or newer**, desktop or a Node-based remote Extension Host. VS Code 1.101 introduced Node 22 in both desktop and remote hosts. A browser-only host such as vscode.dev without a remote host is unsupported.

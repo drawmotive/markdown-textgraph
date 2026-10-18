@@ -10,6 +10,10 @@
     "url": "https://github.com/drawmotive/markdown-textgraph.git",
     "directory": "vscode"
   },
+  "vsce": {
+    "baseContentUrl": "https://github.com/drawmotive/markdown-textgraph/blob/HEAD/vscode/",
+    "baseImagesUrl": "https://github.com/drawmotive/markdown-textgraph/raw/HEAD/vscode/"
+  },
   "bugs": {
     "url": "https://github.com/drawmotive/textgraph/issues"
   },

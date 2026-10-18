@@ -107,6 +107,14 @@ test('development VSIX contains selected local SDK, runtime and fonts and worker
   assert.match(entries.get(`${prefix}src/node.js`).toString(), /localSource/);
   assert.equal(JSON.parse(entries.get('extension/package.json')).private, true);
   assert.equal(entries.has('extension/media/removed.png'), false);
+  const readme = entries.get('extension/readme.md').toString();
+  const repository = 'https://github.com/drawmotive/markdown-textgraph';
+  for (const file of ['online-order-demo.png', 'online-order.png']) {
+    assert.ok(readme.includes(`](${repository}/raw/HEAD/vscode/media/${file})`), 'Packaged image must retain its repository directory: ' + file);
+  }
+  for (const file of ['online-order.md', 'online-order.textgraph']) {
+    assert.ok(readme.includes(`](${repository}/blob/HEAD/vscode/examples/${file})`), 'Packaged source link must retain its repository directory: ' + file);
+  }
   assert.deepEqual(await readFile(path.join(f.component, 'package.json')), beforeManifest);
   assert.deepEqual(await readFile(path.join(f.component, 'package-lock.json')), beforeLock);
   const worker = new Worker(path.join(f.output, 'extension/dist/render-worker.mjs'), { env: {} });
