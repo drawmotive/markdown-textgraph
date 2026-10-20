@@ -72,7 +72,7 @@ on Node; it is not a browser-side TextGraph runtime.
 
 ## markdown-it
 
-Install `@drawmotive/markdown-it-textgraph@alpha` and `markdown-it` for the current preview. Pin the resolved numeric version for reproducible builds.
+Install `@drawmotive/markdown-it-textgraph@0.3.0` and `markdown-it` for the current stable release.
 
 ```javascript
 import MarkdownIt from "markdown-it";
@@ -130,9 +130,9 @@ Both factories accept:
 
 Structured positions are zero-based, with UTF-16 columns. Original-file locations are included only when the parser source can be matched to the supplied document. Frontmatter offsets are verified; included or custom-preprocessed text may have only block-local SDK positions. Error blocks escape source and messages, and disable Vue interpolation.
 
-SDK `0.2.2-alpha.2` returns logical display dimensions even when `maxWidth` caps raster resolution. SDK `0.2.0` lacks that metadata: the adapter divides pixel dimensions by the requested scale, so a clamped image also displays smaller with that older SDK. DPI metadata does not control HTML image size.
+SDK `0.3.0` returns logical display dimensions even when `maxWidth` caps raster resolution. SDK `0.2.0` lacks that metadata: the adapter divides pixel dimensions by the requested scale, so a clamped image also displays smaller with that older SDK. DPI metadata does not control HTML image size.
 
-Custom fonts can be injected using the SDK public language-pack structure. The published optional `@drawmotive/textgraph-fonts@0.2.2-alpha.2` package supplies Chinese, Japanese and emoji descriptors; it is not a required dependency.
+Custom fonts can be injected using the SDK public language-pack structure. The published optional `@drawmotive/textgraph-fonts@0.3.0` package supplies Chinese, Japanese and emoji descriptors; it is not a required dependency.
 
 Connections inside a group introduce its local nodes, so there is no need to
 list them separately. Group bodies also allow bare member names, nested

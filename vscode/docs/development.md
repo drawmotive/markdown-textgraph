@@ -59,7 +59,7 @@ is published.
 The 2026-10-01 standalone audit ran Linux Node 22.23.2/npm 10.9.8 unit tests.
 That audit did not execute real Extension Host tests or Windows/macOS builds.
 
-Independent of the DrawMotive drawing editor. Uses public `@drawmotive/textgraph@0.2.2-alpha.6`, bundled with its runtime and fonts. Rendering is local; no service, API key, separate npm installation, or private C#/WASM build is needed.
+Independent of the DrawMotive drawing editor. Uses public `@drawmotive/textgraph@0.3.0`, bundled with its runtime and fonts. Rendering is local; no service, API key, separate npm installation, or private C#/WASM build is needed.
 
 ## Errors and limits
 
@@ -89,10 +89,10 @@ Changed or removed diagrams cancel obsolete work. Closing a document releases it
 
 ## Install a VSIX
 
-Run **Extensions: Install from VSIX…** and select `textgraph-markdown-0.2.1.vsix`, or:
+Run **Extensions: Install from VSIX…** and select `textgraph-markdown-0.3.0.vsix`, or:
 
 ```sh
-code --install-extension textgraph-markdown-0.2.1.vsix
+code --install-extension textgraph-markdown-0.3.0.vsix
 ```
 
 ## Development

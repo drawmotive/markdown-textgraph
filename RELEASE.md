@@ -1,10 +1,10 @@
 # npm release
 
-Publish only through `.github/workflows/release.yml` in GitHub Actions. The workflow uses Ubuntu, runs the Node 22.12/24 and browser checks, retains a single tarball and SHA-512 receipt, then publishes those exact bytes with provenance. The generated `.release/target.json` owns the coordinated version.
+Publish only through `.github/workflows/release.yml` in GitHub Actions. The workflow uses Ubuntu and publishes an exact retained tarball with provenance. The superproject `release.json` owns the coordinated version and projects it into `.release/target.json`.
 
-The coordinated target is `0.2.2-alpha.2`, published to `alpha` while preserving stable `latest=0.2.1`. Prepare package and lock metadata from public TextGraph SDK `0.2.2-alpha.2` with superproject `npm run release:prepare -- markdown`, finalize the changelog, and run the package checks. Never substitute a local SDK for the public dependency.
+The current stable target is `0.3.0`, published to `latest` with public TextGraph SDK `0.3.0`. Numeric patches `1` through `9` are previews published to `alpha`; patch `0` is stable. Prepare package and lock metadata with superproject `npm run release:prepare -- markdown`, finalize the changelog, and run the package checks. Never substitute a local SDK for the public dependency.
 
-After verification and authorized integration, create `markdown-v0.2.2-alpha.2` on the verified release commit and push that tag to start publication. Manual dispatch must select the same release tag; dispatching from main is rejected. Retry a failed publication job with its retained artifact. An identical already-published version is verified without another upload.
+The coordinated `npm run release:automate -- --publish` command retains the tested archive and evidence, creates or verifies the immutable `markdown-v0.3.0` tag for this release, and explicitly dispatches the publisher with `artifact_tag`, `archive_file`, and `artifact_integrity`. A tag push alone does not start publication. The retained-artifact job verifies the source commit and reviewed SHA-512 before publishing without rebuilding. Retry a failed publication with the same retained artifact. An identical already-published version is verified without another upload.
 
 ## First publication credentials
 
