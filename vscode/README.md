@@ -4,15 +4,15 @@
 
 Turn a few lines in your Markdown into a diagram people can follow, right beside your text in VS Code.
 
-[Install TextGraph](https://marketplace.visualstudio.com/items?itemName=drawmotive.textgraph-markdown) · [Try this diagram](https://textgraph.dev/playground?d=0.c2hvcHBpbmcoaW5mbyk6IFNob3BwaW5nIHsKICBicm93c2UgLT4gY2hlY2tvdXQKfQoKcHJvY2Vzc2luZyhwcmltYXJ5KTogQmVoaW5kIHRoZSBzY2VuZXMgewogIHBheW1lbnQgLT4gc2F2ZWQgOiBZZXMKICBwYXltZW50IC0-KGRhc2hlZCB3YXJuaW5nKSByZXRyeSA6IE5vCiAgcmV0cnkgLT4oZGFzaGVkIHdhcm5pbmcpIHBheW1lbnQKICBzYXZlZCAtPiBlbWFpbAp9CgpkZWxpdmVyeShzdWNjZXNzKTogRGVsaXZlcnkgewogIHBhY2sgLT4gc2hpcCAtPiBhcnJpdmVkCn0KCmNoZWNrb3V0IC0-IHBheW1lbnQKc2F2ZWQgLT4gcGFjawoKYnJvd3NlOiBCcm93c2UgdGhlIHNob3AKY2hlY2tvdXQ6IFBsYWNlIGFuIG9yZGVyCnBheW1lbnQoZGlhbW9uZCBmaWxsIHByaW1hcnkpOiBQYXltZW50XG5hY2NlcHRlZD8KcmV0cnkod2FybmluZyk6IFRyeSBhbm90aGVyXG5wYXltZW50CnNhdmVkOiBTYXZlIHRoZSBvcmRlcgplbWFpbDogU2VuZCBjb25maXJtYXRpb25cbmVtYWlsCnBhY2s6IFByZXBhcmUgdGhlIHBhY2thZ2UKc2hpcDogU2hpcCB0aGUgcGFja2FnZQphcnJpdmVkKGVsbGlwc2UgZmlsbCBzdWNjZXNzKTogUGFja2FnZSBhcnJpdmVzCg) · [Open the example Markdown](examples/online-order.md)
+[Install TextGraph](https://marketplace.visualstudio.com/items?itemName=drawmotive.textgraph-markdown) · [Try this diagram](https://textgraph.dev/playground?d=1.eJxNj71uwzAQg_d7Co4y0LyAhmToz1gE6NRRkC71obIkSHILp-i7F5KduNuB4H0k1RizXGOoxg9EdmT7GeeqUpbJ5GXQeNwk_BAQs-OMwxHJLBOHSrhdOByVM2Vkh2-Tg4SPYXNrvMYHZK55oV-iy-wv4n37UWW2lksZNF52tQeVUVLLcezlizM7Angy4htij1x9Gu9c_qvducnUW2icvbG8VrpZlRMzxeDQorFPPhtxJ2pojbcWsH51qsZzh2e2LKnSvaBi7yUVXmH7sqf7gj9nDXvi) · [Open the example Markdown](examples/online-order.md)
 
-![TextGraph source beside its rendered online-order diagram: Shopping, Behind the scenes, and Delivery, including a payment decision, a retry loop, and a confirmation email.](media/online-order-demo.png)
+![TextGraph source beside its compact horizontal online-order diagram: Checkout and Fulfillment, with a payment decision, a dashed retry loop, and shipping and email receipt branches.](media/online-order-demo.png)
 
 ## Try it with your own words
 
 1. Install **TextGraph for Markdown Preview** and open [online-order.md](examples/online-order.md) in a trusted workspace.
 2. Run **Markdown: Open Preview to the Side** (`Ctrl+K V`, or `Cmd+K V` on macOS).
-3. Change **Package arrives** to **Delivered**. The diagram updates as you type, including unsaved edits.
+3. Change **Delivered** to **At your door**. The diagram updates as you type, including unsaved edits.
 
 Your diagram stays with your documentation as readable text.
 
@@ -20,39 +20,32 @@ Your diagram stays with your documentation as readable text.
 
 ````markdown
 ```textgraph
-shopping(info): Shopping {
-  browse -> checkout
+(horizontal)
+
+checkout(primary): Checkout {
+  order -> payment
+  payment ->(dashed warning) order : No, retry
 }
 
-processing(primary): Behind the scenes {
-  payment -> saved : Yes
-  payment ->(dashed warning) retry : No
-  retry ->(dashed warning) payment
-  saved -> email
+fulfillment(success): Fulfillment {
+  ship -> delivered
+  email
 }
 
-delivery(success): Delivery {
-  pack -> ship -> arrived
-}
+payment -> ship : Yes
+payment -> email : Yes
 
-checkout -> payment
-saved -> pack
-
-browse: Browse the shop
-checkout: Place an order
-payment(diamond fill primary): Payment\naccepted?
-retry(warning): Try another\npayment
-saved: Save the order
-email: Send confirmation\nemail
-pack: Prepare the package
-ship: Ship the package
-arrived(ellipse fill success): Package arrives
+order: Place order
+payment(diamond fill primary): Paid?
+ship: Ship order
+email: Email receipt
+delivered(ellipse fill success): Delivered
 ```
 ````
 
-![Online order: shopping, a payment decision and retry, confirmation, and delivery.](media/online-order.png)
+![Online order: checkout and fulfillment, with a payment decision, a dashed retry loop, and parallel shipping and email receipt branches.](media/online-order.png)
 
-[Open the full diagram](media/online-order.png) · [Copy the source](examples/online-order.textgraph) · [Try this diagram](https://textgraph.dev/playground?d=1.eJxtkcFqwzAQRO_6ij3ah_yADimEnksgvRRy2UqbaIm9EivHwZT-e5GlJAR6MlppZmeec4gpsZw7llPsLRzaGX4MwLfGWybYbMEFcpd4ncyvMUmjo5yLKCmPqEtvYUeBxcMUCLIjobwaJFxGkqk4ZJzJg4Uvyi8XncccyMMNVVjOPShNuoCFj2igHf551QwMNOPNFmhEHkpATwPPpEuXr64k7S28t1FL5S5rpMCpfFGVZ_JFeu9ZxvcVjwVFZ0yFYmFX4ayNQ0wPqYX9gI4ABaJ6UtN8Os84RvFw4mGAJ7l9vT4KOkdpIv9m1tbdvauFT10AJU6B9CgvsSwccK4h6rIVgoUDiQcX5cQ64sRRjlLxlA4W9koJterKBM9kCo3y_zm9jBucjoaBU6aa_gl2X581htn8AYyRzTM)
+[Open the full diagram](media/online-order.png) · [Copy the source](examples/online-order.textgraph) · [Try this diagram](https://textgraph.dev/playground?d=1.eJxNj71uwzAQg_d7Co4y0LyAhmToz1gE6NRRkC71obIkSHILp-i7F5KduNuB4H0k1RizXGOoxg9EdmT7GeeqUpbJ5GXQeNwk_BAQs-OMwxHJLBOHSrhdOByVM2Vkh2-Tg4SPYXNrvMYHZK55oV-iy-wv4n37UWW2lksZNF52tQeVUVLLcezlizM7Angy4htij1x9Gu9c_qvducnUW2icvbG8VrpZlRMzxeDQorFPPhtxJ2pojbcWsH51qsZzh2e2LKnSvaBi7yUVXmH7sqf7gj9nDXvi)
 
 <!-- public-preview:end -->
 
