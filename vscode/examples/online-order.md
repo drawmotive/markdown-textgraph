@@ -4,8 +4,8 @@
 (horizontal)
 
 checkout(primary): Checkout {
-  order -> payment
-  payment ->(dashed warning) order : No, retry
+  pay -> payment
+  payment ->(dashed warning) pay : No, retry
 }
 
 fulfillment(success): Fulfillment {
@@ -16,7 +16,7 @@ fulfillment(success): Fulfillment {
 payment -> ship : Yes
 payment -> email : Yes
 
-order: Place order
+pay: Pay for order
 payment(diamond fill primary): Paid?
 ship: Ship order
 email: Email receipt
