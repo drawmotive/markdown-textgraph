@@ -63,7 +63,7 @@ For Chinese, Japanese, and color emoji, see the [packaged font examples](https:/
 | --- | --- | --- |
 | Plugin build and Node Worker rendering | Linux, Windows, macOS; Node 22.12+; npm 10 | CI targets all three systems with Node 22 |
 | Rendered Markdown and VitePress pages | Current Chromium is covered by the browser suite | Output is ordinary PNG/HTML; Firefox, WebKit and mobile browsers are not currently tested by this repo |
-| VS Code integration | VS Code 1.101+ desktop or Node-based remote host | Separate [VSIX package and support boundary](vscode/README.md#requirements) |
+| VS Code integration | VS Code 1.101+ desktop or Node-based remote host | Separate [VSIX package and support boundary](vscode/docs/development.md#requirements) |
 
 The standalone audit on 2026-10-01 ran Linux x64 with Node 22.23.2 and npm
 10.9.8. CI targets and declared support do not assert Windows, macOS
