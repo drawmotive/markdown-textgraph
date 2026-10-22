@@ -71,6 +71,6 @@ connection endpoints refer to existing objects without changing containment.
 
 Renders locally, without an account or API key. Requires VS Code 1.101 or newer and a trusted workspace; the first preview takes a few seconds to initialize.
 
-Want to move shapes and edit on a canvas? Open the same diagram in [DrawMotive for VS Code](https://github.com/drawmotive/vscode-drawmotive).
+Want to move shapes and edit on a canvas? Try the downloadable editable example in [DrawMotive for VS Code](https://github.com/drawmotive/vscode-drawmotive). This Markdown extension previews TextGraph; it does not transfer a source block into the visual editor.
 
 [Report an issue](https://github.com/drawmotive/textgraph/issues) · [Development and support](docs/development.md) · [Project](https://github.com/drawmotive/markdown-textgraph)
