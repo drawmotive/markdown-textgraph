@@ -7,7 +7,7 @@ For VS Code’s built-in Markdown Preview, see the independent [TextGraph extens
 
 Render `textgraph` fenced code blocks as static PNG diagrams in markdown-it and VitePress. Rendering runs in a Node Worker through the public `@drawmotive/textgraph` package. Visitors receive images without downloading a diagram runtime.
 
-The adapter uses the public TextGraph SDK pinned in its independent lockfile. New releases share a numeric version with the SDK: patch `0` is stable and patches `1` through `9` are previews on npm’s `alpha` channel. Historical suffixed versions remain available.
+The adapter uses the public TextGraph SDK pinned in its independent lockfile. New releases share a canonical numeric version with the SDK. Every numeric version is stable and publishes to the latest npm channel. Historical suffixed versions remain available.
 
 ## Example output
 
@@ -183,7 +183,7 @@ npm trust github @drawmotive/markdown-it-textgraph --repo drawmotive/markdown-te
 
 Before starting an ordered rollout, dispatch `release.yml` with `verify_trust_only=true` on the reviewed release branch. This mode exchanges the GitHub identity with npm, discards the short-lived credential, and publishes no package. An HTTP error identifies a trust configuration problem without partially publishing the release graph.
 
-The projected release target declares the publication channel. Stable patch versions publish to `latest`; preview versions remain on `alpha`. Verify the published version's GitHub Actions trusted-publisher identity and provenance in addition to its archive integrity.
+The projected release target records the stable publication channel for every numeric version. Verify the published version's GitHub Actions trusted-publisher identity and provenance in addition to its archive integrity.
 
 ## Development
 

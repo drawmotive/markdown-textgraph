@@ -1,8 +1,8 @@
 const assert = require('node:assert/strict');
 const { releaseChannel } = require('../.release/release-version.cjs');
 
-/** Packaging and publication share the target's preview authority. Numeric
- * previews retain the same package and coordinated release identity. */
+/** Numeric identities package as stable. Historical suffixed targets alone
+ * may request preview metadata while retaining their original identities. */
 function previewArguments(target) {
   assert.ok([1, 2].includes(target.schemaVersion), 'Unknown release target schema');
   const legacy = target.schemaVersion === 1;
