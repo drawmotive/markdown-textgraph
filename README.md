@@ -171,6 +171,20 @@ Root arrows can also target inline groups, such as `A -> { B -> C }`. Use `B`
 at the root when it is unique. Unmatched closing braces return syntax
 diagnostics.
 
+## Publication
+
+The `release.yml` workflow publishes verified archives through npm trusted publishing with GitHub OIDC and provenance. Both publication paths require the npm trusted publisher configured for repository `drawmotive/markdown-textgraph`, workflow `release.yml`, and environment `npm`. No personal npm token fallback is provided.
+
+Configure this trust from an authenticated npm owner session with two-factor authentication; npm does not permit trusted-publisher management using granular tokens that bypass 2FA. Use npm 11.15.0 or later:
+
+```bash
+npm trust github @drawmotive/markdown-it-textgraph --repo drawmotive/markdown-textgraph --file release.yml --env npm --allow-publish --yes
+```
+
+Before starting an ordered rollout, dispatch `release.yml` with `verify_trust_only=true` on the reviewed release branch. This mode exchanges the GitHub identity with npm, discards the short-lived credential, and publishes no package. An HTTP error identifies a trust configuration problem without partially publishing the release graph.
+
+The projected release target declares the publication channel. Stable patch versions publish to `latest`; preview versions remain on `alpha`. Verify the published version's GitHub Actions trusted-publisher identity and provenance in addition to its archive integrity.
+
 ## Development
 
 ```bash
