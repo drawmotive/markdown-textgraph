@@ -1,6 +1,6 @@
 # Development and support
 
-New releases use the same numeric version for the SDK, npm packages, and VSIX. Patch `0` is stable; patches `1` through `9` package and publish with `--pre-release`. Both odd and even preview patches are supported. Historical schema-one releases retain their original versions for verification.
+New releases use the same canonical numeric version for the SDK, npm packages and VSIX. Every numeric version packages and publishes as stable, without --pre-release. Historical schema-one releases retain their original versions for verification.
 
 ## Regenerate the introduction example
 

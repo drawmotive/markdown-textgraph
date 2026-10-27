@@ -16,7 +16,7 @@ const registry = "https://registry.npmjs.org/";
 /** Publish channels are derived from the coordinated version, never CLI defaults. */
 export function releasePolicy(pkg, target) {
   assert.ok([1, 2].includes(target.schemaVersion), "Unknown release target schema.");
-  const options = { legacy: target.schemaVersion === 1 };
+  const options = { legacy: target.schemaVersion === 1, channel: target.channel };
   const channel = releaseChannel(pkg.version, options);
   assert.equal(target.version, pkg.version, "Package version must match the release target.");
   assert.equal(target.releaseVersion, pkg.version, "Coordinated release version must match the package.");
@@ -24,7 +24,7 @@ export function releasePolicy(pkg, target) {
   const tag = releaseTag(pkg.version, options);
   assert.notEqual(pkg.private, true);
   assert.deepEqual(pkg.publishConfig, { access: "public", registry, tag });
-  return { name: pkg.name, version: pkg.version, tag, gitTag: `markdown-v${pkg.version}`, filename: `drawmotive-markdown-it-textgraph-${pkg.version}.tgz`, ...(options.legacy ? {} : { releaseSchemaVersion: 2 }) };
+  return { name: pkg.name, version: pkg.version, tag, gitTag: `markdown-v${pkg.version}`, filename: `drawmotive-markdown-it-textgraph-${pkg.version}.tgz`, ...(options.legacy ? {} : { releaseSchemaVersion: 2, releaseChannel: channel }) };
 }
 
 /** The generated target owns package identity; native dependencies must already be public. */
@@ -51,6 +51,7 @@ export async function verifyArtifact(directory, expected, commit) {
   const receipt = await readJson(path.join(directory, "npm-release.json"));
   for (const key of ["name", "version", "tag", "gitTag", "filename"]) assert.equal(receipt[key], expected[key], `Artifact ${key} mismatch`);
   assert.equal(receipt.releaseSchemaVersion, expected.releaseSchemaVersion, 'Artifact release schema mismatch');
+  if (receipt.releaseChannel !== undefined) assert.equal(receipt.releaseChannel, expected.releaseChannel, 'Artifact release channel mismatch');
   assert.equal(receipt.commit, commit, "Artifact source commit mismatch");
   const bytes = await readFile(path.join(directory, expected.filename));
   assert.equal(receipt.integrity, `sha512-${createHash("sha512").update(bytes).digest("base64")}`, "Artifact integrity mismatch");

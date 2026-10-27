@@ -2,6 +2,11 @@ name: Publish Markdown npm package
 on:
   workflow_dispatch:
     inputs:
+      verify_trust_only:
+        description: Verify npm OIDC trust without publishing an archive
+        required: false
+        default: false
+        type: boolean
       artifact_tag:
         description: Draft release retaining the already tested archive
         required: false
@@ -20,8 +25,41 @@ concurrency:
   group: markdown-npm-publication
   cancel-in-progress: false
 jobs:
+  trust:
+    if: inputs.verify_trust_only
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify the npm trusted publisher without publishing
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const url = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+          url.searchParams.set('audience', 'npm:registry.npmjs.org');
+          const identity = await fetch(url, {
+            headers: { Authorization: 'Bearer ' + process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN },
+          });
+          assert.ok(identity.ok, 'GitHub OIDC request failed: HTTP ' + identity.status);
+          const { value } = await identity.json();
+          assert.ok(value, 'GitHub OIDC token missing');
+          const exchange = await fetch('https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/%40drawmotive%2Fmarkdown-it-textgraph', {
+            method: 'POST', headers: { Authorization: 'Bearer ' + value },
+          });
+          assert.ok(exchange.ok, 'npm trusted publisher exchange failed: HTTP ' + exchange.status + '; check repository drawmotive/markdown-textgraph, workflow release.yml, environment npm');
+          const result = await exchange.json();
+          assert.equal(result.token_type, 'oidc', 'npm returned an unexpected token type');
+          assert.ok(result.token, 'npm trusted publisher exchange returned no token');
+          console.log('npm accepted the GitHub Actions identity; no package was published.');
+          JS
   resolve:
-    if: inputs.artifact_tag == ''
+    if: ${{ !inputs.verify_trust_only && inputs.artifact_tag == '' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,27 +102,28 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org/
-      - run: npm install --global npm@11.11.1
+      - run: npm install --global npm@11.19.1
       - uses: actions/download-artifact@v4
         with:
           name: markdown-npm-release
           path: .release
-      # npm prefers OIDC. The optional token bootstraps the first publication
-      # before the package owner can configure its npm trusted publisher.
+      # No static npm credential is available: a failed trust exchange must stop
+      # publication instead of silently publishing under a personal identity.
+      - name: Require GitHub OIDC publication credentials
+        run: |
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          test -z "$NODE_AUTH_TOKEN"
+          test -z "$NPM_TOKEN"
       - name: Publish and verify the exact tested archive
         run: node tooling/npm-release.mjs publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
   retained:
-    if: inputs.artifact_tag != ''
+    if: ${{ !inputs.verify_trust_only && inputs.artifact_tag != '' }}
     runs-on: ubuntu-latest
     environment: npm
     permissions:
       contents: read
       id-token: write
-    env:
-      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -94,18 +133,13 @@ jobs:
         with:
           node-version: 22
       - run: npm install --global npm@11.19.1
-      # npm attempts OIDC first. The optional credential keeps publication
-      # available when the package owner has not configured trusted publishing.
-      - name: Configure optional npm token fallback
-        if: env.NODE_AUTH_TOKEN != ''
+      # Keep publication dependent on the configured repository/workflow trust.
+      - name: Require GitHub OIDC publication credentials
         run: |
-          node --input-type=module <<'JS'
-          import { appendFileSync, writeFileSync } from 'node:fs';
-          import path from 'node:path';
-          const file = path.join(process.env.RUNNER_TEMP, 'markdown-textgraph.npmrc');
-          writeFileSync(file, '//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}\n', { mode: 0o600 });
-          appendFileSync(process.env.GITHUB_ENV, `NPM_CONFIG_USERCONFIG=${file}\n`);
-          JS
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_URL"
+          test -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+          test -z "$NODE_AUTH_TOKEN"
+          test -z "$NPM_TOKEN"
       - name: Download the reviewed archive without rebuilding
         env:
           GH_TOKEN: ${{ github.token }}

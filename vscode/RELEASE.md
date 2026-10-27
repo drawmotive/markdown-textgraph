@@ -2,7 +2,7 @@
 
 Release version/channel come from the superproject release.json, projected into .release/target.json. Do not bump this package independently. Run npm run release:check before packaging; unprepared dependencies block release. The current artifact remains historical until preparation succeeds.
 
-Extension: `drawmotive.textgraph-markdown`. The current stable extension and bundled TextGraph SDK are both `0.3.0`, published to Marketplace. New releases share one numeric version: patch `0` is stable, while patches `1` through `9` use VSIX prerelease metadata. The generated target gates coordinated publication.
+Extension: drawmotive.textgraph-markdown. The coordinated extension and bundled TextGraph SDK target are both 0.3.1, published to Marketplace. Every numeric version is stable and packages without VSIX prerelease metadata. The generated target gates coordinated publication.
 
 ## Prepare and verify
 
