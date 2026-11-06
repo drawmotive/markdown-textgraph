@@ -34,10 +34,19 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
     for (const asset of manifest.assets) sdk.set(asset.path.slice('editor/'.length), path.join(sdkRoot, 'generated', asset.path));
     sdk.set('LICENSE', path.join(sdkRoot, 'LICENSE'));
     for (const [name, file] of fileTree(path.join(sdkRoot, 'licenses'))) sdk.set('licenses/' + name, file);
-    // The product owns its webview; the SDK owns only its browser entry and
-    // manifest runtime. Bind both staging boundaries to their source authority.
-    const webview = new Map([['sdk.js', path.join(sdkRoot, 'src/index.js')],
-      ...['editor.js', 'editor-session.mjs'].map(name => [name, path.join(root, 'webview', name)])]);
+    // Keep the SDK's relative module and Worker URLs intact. Matching only its
+    // entry would certify an archive whose imports still point outside staging.
+    const webview = new Map(['editor.js', 'editor-session.mjs'].map(name => [name, path.join(root, 'webview', name)]));
+    for (const directory of ['src', 'dist/workers']) {
+      const source = path.join(sdkRoot, directory);
+      if (directory === 'dist/workers' && !fs.lstatSync(source, { throwIfNoEntry: false })) continue;
+      for (const [relative, file] of fileTree(source)) {
+        if (!/\.m?js$/.test(relative)) continue;
+        if (relative.split('/').some(part => !/^[A-Za-z0-9_@+.-]+$/.test(part) || part.startsWith('.'))) throw new Error('Public SDK module path is unsafe: ' + relative);
+        webview.set('sdk/' + directory + '/' + relative, file);
+      }
+    }
+    if (!webview.has('sdk/src/index.js')) throw new Error('Public SDK browser entry is missing.');
     for (const [name, file] of webview) {
       const bundled = expected.get('extension/dist/webview/' + name);
       if (!bundled) throw new Error('Built extension is missing webview file ' + name);
@@ -68,9 +77,12 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
       zip.on("end", () => { if (!failed) resolve(); });
       zip.on("entry", entry => {
         const name = entry.fileName;
+        // Extraction normalizes dot and empty segments. Reject aliases before
+        // matching scopes so unchecked bytes cannot overwrite a checked file.
+        const segments = (name.endsWith("/") ? name.slice(0, -1) : name).split("/");
+        if (name.includes("\\") || segments.some(part => !part || part === "." || part === "..") || ((entry.externalFileAttributes >>> 16) & 0o170000) === 0o120000) { fail(new Error("VSIX contains unsafe entry " + name)); return; }
         if (seen.has(name)) { fail(new Error("VSIX contains duplicate entry " + name)); return; }
         seen.add(name);
-        if (name.includes("\\") || name.startsWith("/") || name.split("/").includes("..") || ((entry.externalFileAttributes >>> 16) & 0o170000) === 0o120000) { fail(new Error("VSIX contains unsafe entry " + name)); return; }
         if (name.endsWith("/")) { zip.readEntry(); return; }
         const wanted = expected.get(name);
         const manifest = name === "extension.vsixmanifest";
@@ -118,7 +130,9 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
 
 function fileTree(root) {
   const result = new Map();
-  if (!fs.existsSync(root)) throw new Error("Required release directory is missing: " + root);
+  const info = fs.lstatSync(root, { throwIfNoEntry: false });
+  if (!info) throw new Error("Required release directory is missing: " + root);
+  if (info.isSymbolicLink()) throw new Error("Release files must not use symlink directories: " + root);
   const canonical = fs.realpathSync(root);
   if (canonical !== root) throw new Error("Release files must not use symlink directories: " + root);
   function visit(directory, prefix) {
