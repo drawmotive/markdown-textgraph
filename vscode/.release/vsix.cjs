@@ -39,7 +39,6 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
     const webview = new Map(['editor.js', 'editor-session.mjs'].map(name => [name, path.join(root, 'webview', name)]));
     for (const directory of ['src', 'dist/workers']) {
       const source = path.join(sdkRoot, directory);
-      if (directory === 'dist/workers' && !fs.lstatSync(source, { throwIfNoEntry: false })) continue;
       for (const [relative, file] of fileTree(source)) {
         if (!/\.m?js$/.test(relative)) continue;
         if (relative.split('/').some(part => !/^[A-Za-z0-9_@+.-]+$/.test(part) || part.startsWith('.'))) throw new Error('Public SDK module path is unsafe: ' + relative);
@@ -47,6 +46,11 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
       }
     }
     if (!webview.has('sdk/src/index.js')) throw new Error('Public SDK browser entry is missing.');
+    // The current canvas contract owns both services; matching equally incomplete
+    // installation and staging trees cannot establish a runnable extension.
+    for (const name of ['document.worker.js', 'resource.worker.js']) {
+      if (!webview.has('sdk/dist/workers/' + name)) throw new Error('Missing required SDK worker bundle: ' + name);
+    }
     for (const [name, file] of webview) {
       const bundled = expected.get('extension/dist/webview/' + name);
       if (!bundled) throw new Error('Built extension is missing webview file ' + name);
