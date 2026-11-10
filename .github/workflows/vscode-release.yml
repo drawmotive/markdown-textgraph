@@ -21,6 +21,7 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: vscode/package-lock.json
+      - run: npm install --global npm@12.2.1
       - run: npm run release:check
       - run: npm ci --workspaces=false
       - run: npm test

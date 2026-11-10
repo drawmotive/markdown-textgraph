@@ -1,3 +1,4 @@
+import { parseNpmPack } from "../.release/release-registry.mjs";
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, readFile, realpath, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -26,7 +27,7 @@ async function consumerFixture(t, prefix, names, compatibility) {
   const command = ownedCommands(t);
   const temp = await realpath(await mkdtemp(path.join(tmpdir(), prefix)));
   t.after(() => rm(temp, { recursive: true, force: true }));
-  const [pack] = JSON.parse(await command([npmCli, "pack", "--ignore-scripts", "--workspaces=false", "--json", "--pack-destination", temp], root, "pack consumer artifact"));
+  const pack = parseNpmPack(await command([npmCli, "pack", "--ignore-scripts", "--workspaces=false", "--json", "--pack-destination", temp], root, "pack consumer artifact"), manifest.name);
   const inputs = consumerLock(manifest, locked, pack, names, compatibility);
   await writeFile(path.join(temp, "package.json"), JSON.stringify(inputs.manifest));
   await writeFile(path.join(temp, "package-lock.json"), JSON.stringify(inputs.lock));
