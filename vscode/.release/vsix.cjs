@@ -36,13 +36,13 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
     for (const [name, file] of fileTree(path.join(sdkRoot, 'licenses'))) sdk.set('licenses/' + name, file);
     // Keep the SDK's relative module and Worker URLs intact. Matching only its
     // entry would certify an archive whose imports still point outside staging.
-    const webview = new Map(['editor.js', 'editor-session.mjs'].map(name => [name, path.join(root, 'webview', name)]));
+    const webview = new Map(['editor.js', 'editor-session.mjs'].map(name => [name, fs.readFileSync(path.join(root, 'webview', name))]));
     for (const directory of ['src', 'dist/workers']) {
       const source = path.join(sdkRoot, directory);
       for (const [relative, file] of fileTree(source)) {
         if (!/\.m?js$/.test(relative)) continue;
         if (relative.split('/').some(part => !/^[A-Za-z0-9_@+.-]+$/.test(part) || part.startsWith('.'))) throw new Error('Public SDK module path is unsafe: ' + relative);
-        webview.set('sdk/' + directory + '/' + relative, file);
+        webview.set('sdk/' + directory + '/' + relative, fs.readFileSync(file));
       }
     }
     if (!webview.has('sdk/src/index.js')) throw new Error('Public SDK browser entry is missing.');
@@ -51,10 +51,18 @@ async function verifyVsix(filename, root, { validateCurrent } = {}) {
     for (const name of ['document.worker.js', 'resource.worker.js']) {
       if (!webview.has('sdk/dist/workers/' + name)) throw new Error('Missing required SDK worker bundle: ' + name);
     }
-    for (const [name, file] of webview) {
+    // Rebuild controls from the installed public package with the same authored
+    // bundler used by staging. Matching stale dist/archive bundles cannot prove
+    // that the selected UI package or its stylesheet and notices were included.
+    const { editorUiFiles } = requireComponent(path.join(root, 'scripts/bundle-editor-ui.cjs'));
+    const uiFiles = await editorUiFiles({ root });
+    const uiNames = ['editor-ui.js', 'editor-ui.css', 'editor-ui-NOTICES.txt', 'MaterialSymbols-LICENSE.txt', 'MaterialSymbols-NOTICE.txt'];
+    if (!(uiFiles instanceof Map) || uiFiles.size !== uiNames.length || uiNames.some(name => !Buffer.isBuffer(uiFiles.get(name)))) throw new Error('Generated files contain incomplete or unrecognized Editor UI assets.');
+    for (const name of uiNames) webview.set(name, uiFiles.get(name));
+    for (const [name, bytes] of webview) {
       const bundled = expected.get('extension/dist/webview/' + name);
       if (!bundled) throw new Error('Built extension is missing webview file ' + name);
-      if (hash(fs.readFileSync(bundled.file)) !== hash(fs.readFileSync(file))) throw new Error('Built extension contains a stale webview file ' + name);
+      if (hash(fs.readFileSync(bundled.file)) !== hash(bytes)) throw new Error('Built extension contains a stale webview file ' + name);
     }
     for (const key of expected.keys()) if (key.startsWith('extension/dist/webview/') && !webview.has(key.slice('extension/dist/webview/'.length))) throw new Error('Built extension contains unrecognized webview files');
   }
