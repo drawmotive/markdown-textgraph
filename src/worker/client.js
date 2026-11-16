@@ -1,14 +1,9 @@
 import { Worker } from "node:worker_threads";
-import { encodeLanguagePacks, restoreError } from "./protocol.js";
+import { encodeLanguagePacks, encodeRenderOptions, restoreError } from "./protocol.js";
 
-/** One lazy Worker owns one SDK VM; configuration is fixed for the session. */
+/** One lazy Worker owns one SDK VM; base options are snapshotted for the session. */
 export function createWorkerRenderer(options = {}) {
-  const render = Object.fromEntries(["scale", "padding", "maxWidth"].map(key => {
-    const supplied = options.render?.[key];
-    const value = supplied === undefined && key === "scale" ? 1 : supplied;
-    // Unknown fields stay outside RPC; invalid values remain invalid for the SDK.
-    return [key, value === undefined || typeof value === "number" ? value : null];
-  }));
+  const render = encodeRenderOptions(options.render);
   const workerData = { render, languagePacks: encodeLanguagePacks(options.languagePacks) };
   // A module data URL accepts inherited --input-type flags from Node eval consumers.
   // Let Node inherit supported flags itself; copying execArgv exposes process-only flags.

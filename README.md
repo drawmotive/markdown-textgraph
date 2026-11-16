@@ -110,7 +110,7 @@ The adapter preserves existing Markdown hooks, includes, asynchronous highlighti
 
 The example can run with `npx vitepress dev examples/vitepress` or `npx vitepress build examples/vitepress`. VitePress serves independent PNGs during development and writes them to its build assets directory. URLs respect the configured `base` and `assetsDir`; no browser runtime or manually managed image directory is needed.
 
-VitePress renders native light and dark PNGs for every diagram. The selected VitePress appearance chooses the matching image through its `html.dark` class, including before hydration. Both variants use content-hashed URLs; image colors are never changed by a CSS filter. Plain markdown-it continues to render one light PNG.
+VitePress renders native light and dark PNGs for every diagram. The selected VitePress appearance chooses the matching image through its `html.dark` class, including before hydration. Both variants use content-hashed URLs; image colors are never changed by a CSS filter. Plain markdown-it renders one PNG, light by default. Set `render: { dark: true }` to produce a native dark image.
 
 Files are named `textgraph-<hash>.png`, using the first 20 hexadecimal characters of the final PNG's SHA-256. Identical PNGs share one file across pages, and changed pixels or rendering metadata produce a new URL. Generated files belong to the build output, not the Markdown source tree. Plain markdown-it keeps base64 images for self-contained HTML.
 
@@ -118,7 +118,7 @@ Files are named `textgraph-<hash>.png`, using the first 20 hexadecimal character
 
 Both factories accept:
 
-- `render`: SDK `scale`, `padding` and `maxWidth` options. Web rendering defaults to scale `1`; images display at logical diagram dimensions and shrink to fit their container. Set `scale: 2` explicitly for higher raster density. `scale` controls raster density; it does not enlarge the diagram.
+- `render`: SDK `scale`, `padding`, `maxWidth` and `dark` options. `dark` accepts a boolean and defaults to false; VitePress always renders both appearances. Web rendering defaults to scale `1`; images display at logical diagram dimensions and shrink to fit their container. Set `scale: 2` explicitly for higher raster density. `scale` controls raster density; it does not enlarge the diagram.
 - `languagePacks`: SDK language packs containing font URLs or byte arrays and optional fallback families. Inputs are copied when the session is created.
 - `errorMode`: `inline` or `throw`. Plain markdown-it defaults to `inline`.
 - `onDiagnostic`: receives `{ file?, blockIndex, diagnostic, documentLocation? }`, including warnings from successful diagrams.

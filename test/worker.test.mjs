@@ -3,6 +3,7 @@ import { EventEmitter } from "node:events";
 import test from "node:test";
 import { createWorkerClient } from "../src/worker/client.js";
 import { encodeLanguagePacks, decodeLanguagePacks } from "../src/worker/protocol.js";
+import * as protocol from "../src/worker/protocol.js";
 
 class WorkerTransport extends EventEmitter {
   sent = [];
@@ -97,4 +98,19 @@ test("language pack URLs survive transport and bytes belong to the session snaps
   assert.deepEqual(decoded[0].fonts[1].source, new Uint8Array([1, 2, 3]));
   assert.deepEqual(decoded[0].fallbackFamilies, ["B"]);
   assert.equal(source.byteLength, 3);
+});
+
+test("worker options preserve native dark booleans and keep malformed values invalid", () => {
+  assert.equal(typeof protocol.encodeRenderOptions, 'function');
+  for (const dark of [true, false]) assert.equal(protocol.encodeRenderOptions({ dark }).dark, dark);
+  assert.equal(protocol.encodeRenderOptions({}).dark, undefined);
+  for (const dark of ['false', 0, 1, null, {}, () => true]) {
+    assert.equal(protocol.encodeRenderOptions({ dark }).dark, null);
+  }
+  const options = { dark: true, scale: 2, unexpected: 'ignored' };
+  const encoded = protocol.encodeRenderOptions(options);
+  options.dark = false;
+  assert.equal(encoded.dark, true);
+  assert.equal(encoded.scale, 2);
+  assert.equal('unexpected' in encoded, false);
 });

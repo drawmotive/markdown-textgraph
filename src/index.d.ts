@@ -18,7 +18,10 @@ export interface MarkdownDiagnostic {
 
 export interface TextGraphMarkdownOptions {
   /** Defaults to scale 1; display size uses logical diagram dimensions. */
-  render?: Pick<TextGraphRenderPngOptions, 'scale' | 'padding' | 'maxWidth'>;
+  render?: Pick<TextGraphRenderPngOptions, 'scale' | 'padding' | 'maxWidth'> & {
+    /** Native dark palette; defaults to false. VitePress renders both appearances. */
+    dark?: boolean;
+  };
   languagePacks?: readonly TextGraphLanguagePack[];
   errorMode?: 'inline' | 'throw';
   onDiagnostic?: (diagnostic: MarkdownDiagnostic) => void;

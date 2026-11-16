@@ -1,3 +1,15 @@
+/** Only supported scalar options cross RPC; malformed values remain invalid for the SDK. */
+export function encodeRenderOptions(options = {}) {
+  const render = Object.fromEntries(["scale", "padding", "maxWidth"].map(key => {
+    const supplied = options?.[key];
+    const value = supplied === undefined && key === "scale" ? 1 : supplied;
+    return [key, value === undefined || typeof value === "number" ? value : null];
+  }));
+  const dark = options?.dark;
+  if (dark !== undefined) render.dark = typeof dark === "boolean" ? dark : null;
+  return render;
+}
+
 /** Snapshot font inputs before the lazy Worker starts, without detaching caller bytes.
  * The SDK remains the authority for validating font families and data. */
 export function encodeLanguagePacks(packs) {
