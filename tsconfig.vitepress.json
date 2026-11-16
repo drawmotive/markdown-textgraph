@@ -3,7 +3,9 @@
   "compilerOptions": {
     // tooling/check.mjs resolves the Markdown 14 host types for this project,
     // including installations hoisted by the parent npm workspace.
-    "types": ["node", "web-bluetooth"]
+    "types": ["node", "web-bluetooth"],
+    // VueUse 15 exposes Temporal types through the VitePress host declarations.
+    "lib": ["ES2022", "DOM", "DOM.Iterable", "ESNext.Temporal"]
   },
   "include": [
     "src/**/*.d.ts",
