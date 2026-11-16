@@ -46,6 +46,22 @@ test("unused renderer disposal does not create a Worker", async () => {
   await assert.rejects(renderer.renderPng("A"), { code: "TG_SESSION_DISPOSED" });
 });
 
+test("worker RPC carries each image appearance independently", async () => {
+  const worker = new WorkerTransport();
+  const renderer = createWorkerClient(() => worker);
+  const light = renderer.renderPng("A -> B", { dark: false });
+  const dark = renderer.renderPng("A -> B", { dark: true });
+  assert.equal(worker.sent[0].dark, false);
+  assert.equal(worker.sent[1].dark, true);
+  worker.respond(0, "light bytes");
+  worker.respond(1, "dark bytes");
+  assert.equal(await light, "light bytes");
+  assert.equal(await dark, "dark bytes");
+  const closing = renderer.dispose();
+  worker.respond(2);
+  await closing;
+});
+
 test("worker exit rejects all accepted work and never silently restarts", async () => {
   const worker = new WorkerTransport();
   let starts = 0;

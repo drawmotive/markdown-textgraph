@@ -18,7 +18,8 @@ parentPort.on("message", message => {
         }
       } else {
         sdk ??= initializeTextGraph({ languagePacks: decodeLanguagePacks(workerData.languagePacks) });
-        result = await (await sdk).renderPng(message.source, { ...workerData.render, encoding: "base64" });
+        result = await (await sdk).renderPng(message.source, { ...workerData.render,
+          ...(message.dark === undefined ? {} : { dark: message.dark }), encoding: "base64" });
       }
       parentPort.postMessage({ id: message.id, result });
     } catch (error) {

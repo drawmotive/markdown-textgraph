@@ -110,6 +110,8 @@ The adapter preserves existing Markdown hooks, includes, asynchronous highlighti
 
 The example can run with `npx vitepress dev examples/vitepress` or `npx vitepress build examples/vitepress`. VitePress serves independent PNGs during development and writes them to its build assets directory. URLs respect the configured `base` and `assetsDir`; no browser runtime or manually managed image directory is needed.
 
+VitePress renders native light and dark PNGs for every diagram. The selected VitePress appearance chooses the matching image through its `html.dark` class, including before hydration. Both variants use content-hashed URLs; image colors are never changed by a CSS filter. Plain markdown-it continues to render one light PNG.
+
 Files are named `textgraph-<hash>.png`, using the first 20 hexadecimal characters of the final PNG's SHA-256. Identical PNGs share one file across pages, and changed pixels or rendering metadata produce a new URL. Generated files belong to the build output, not the Markdown source tree. Plain markdown-it keeps base64 images for self-contained HTML.
 
 ## Options and diagnostics

@@ -1,6 +1,7 @@
 import { createMarkdownSession, isTextGraphRenderFailure } from "./markdown.js";
 import { createWorkerRenderer } from "./worker/client.js";
 import { createPngAssets } from "./vitepress-assets.js";
+import { appearanceStyles, createThemedRenderer } from "./vitepress-appearance.js";
 
 /** Compose host hooks without taking ownership of VitePress parsing or page transforms. */
 export function withTextGraph(config = {}, options = {}) {
@@ -10,11 +11,11 @@ export function withTextGraph(config = {}, options = {}) {
   const assets = createPngAssets(config);
   const getSession = () => {
     if (closed) throw new Error("TextGraph VitePress session is closed");
-    return session ??= createMarkdownSession(createWorkerRenderer(options), {
+    return session ??= createMarkdownSession(createThemedRenderer(createWorkerRenderer(options)), {
       ...options,
       // VitePress creates Markdown before our configResolved hook chooses the command.
       get errorMode() { return options.errorMode ?? (command === "build" ? "throw" : "inline"); },
-    }, result => assets.add(result));
+    }, result => ({ src: assets.add(result), darkSrc: assets.add(result.darkResult), darkResult: result.darkResult }));
   };
   const dispose = async () => {
     closed = true;
@@ -26,6 +27,7 @@ export function withTextGraph(config = {}, options = {}) {
   };
   return {
     ...config,
+    head: [...(config.head ?? []), ['style', {}, appearanceStyles]],
     markdown: {
       ...config.markdown,
       async config(md) {

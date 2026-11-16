@@ -111,7 +111,10 @@ for (const base of ["/", "/docs/"]) {
     const html = await readFile(path.join(result.root, ".vitepress/dist/index.html"), "utf8");
     assert.ok(!html.includes("data:image/png;base64,"));
     const images = [...html.matchAll(/<img[^>]*src="([^"]*textgraph-[a-f0-9]{20}\.png)"[^>]*>/g)];
-    assert.equal(images.length, 3);
+    assert.equal(images.length, 6);
+    for (let index = 0; index < images.length; index += 2) {
+      assert.notEqual(images[index][1], images[index + 1][1], "theme variants need distinct native bytes");
+    }
     for (const [, url] of images) {
       assert.ok(url.startsWith(base + "assets/"), url);
       const bytes = await readFile(path.join(result.root, ".vitepress/dist", url.slice(base.length)));
@@ -121,7 +124,7 @@ for (const base of ["/", "/docs/"]) {
     }
     const duplicate = await readFile(path.join(result.root, ".vitepress/dist/duplicate.html"), "utf8");
     assert.ok(duplicate.includes(images[0][1]));
-    assert.equal((await readdir(path.join(result.root, ".vitepress/dist/assets"))).filter(name => name.startsWith("textgraph-")).length, 3);
+    assert.equal((await readdir(path.join(result.root, ".vitepress/dist/assets"))).filter(name => name.startsWith("textgraph-")).length, 6);
     assert.match(html, /const/);
     assert.doesNotMatch(html, /textgraph-placeholder|textgraph-marker/);
   });

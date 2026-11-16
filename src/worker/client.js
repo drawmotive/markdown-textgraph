@@ -28,7 +28,7 @@ export function createWorkerClient(startWorker) {
     pending.clear();
     worker?.unref();
   }
-  function request(kind, source) {
+  function request(kind, source, dark) {
     if (failure) return Promise.reject(failure);
     try {
       if (!worker) {
@@ -51,15 +51,15 @@ export function createWorkerClient(startWorker) {
         const id = ++nextId;
         pending.set(id, { resolve, reject });
         worker.ref();
-        try { worker.postMessage({ id, kind, source }); }
+        try { worker.postMessage({ id, kind, source, ...(dark === undefined ? {} : { dark }) }); }
         catch (error) { fail(error); void terminate().catch(() => {}); }
       });
     } catch (error) { fail(error); return Promise.reject(error); }
   }
   return {
-    renderPng(source) {
+    renderPng(source, { dark } = {}) {
       if (stopped) return Promise.reject(Object.assign(new Error("TextGraph session is disposed"), { code: "TG_SESSION_DISPOSED" }));
-      return request("render", source);
+      return request("render", source, dark);
     },
     dispose() {
       if (closing) return closing;

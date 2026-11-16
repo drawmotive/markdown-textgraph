@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import path from "node:path";
 import { createServer } from "node:net";
 import { renderPngFigure } from "../../src/html.js";
+import { appearanceStyles } from "../../src/vitepress-appearance.js";
 import { PNG } from "pngjs";
 import { vitePressServerUrl } from "../support/vitepress-output.mjs";
 
@@ -19,6 +20,28 @@ test("plain Markdown images fit narrow containers without distorting aspect rati
   const bounds = await image.boundingBox();
   expect(bounds.width).toBeLessThanOrEqual(180);
   expect(bounds.width / bounds.height).toBeCloseTo(2);
+});
+
+test("paired images select distinct native bytes through html.dark without filters", async ({ page }) => {
+  const nativeImage = value => {
+    const png = new PNG({ width: 20, height: 10 });
+    png.data.fill(value);
+    return { png: PNG.sync.write(png).toString('base64'), width: 20, height: 10 };
+  };
+  const light = nativeImage(255);
+  const dark = nativeImage(50);
+  const lightSrc = 'data:image/png;base64,' + light.png;
+  const darkSrc = 'data:image/png;base64,' + dark.png;
+  await page.setContent('<style>' + appearanceStyles + '</style>' + renderPngFigure(light, { src: lightSrc, darkSrc, darkResult: dark }));
+  const image = page.locator('img:visible');
+  await expect(image).toHaveCount(1);
+  await expect(image).toHaveAttribute('src', lightSrc);
+  await page.evaluate(() => document.documentElement.classList.add('dark'));
+  await expect(image).toHaveCount(1);
+  await expect(image).toHaveAttribute('src', darkSrc);
+  expect(await image.evaluate(element => getComputedStyle(element).filter)).toBe('none');
+  await page.evaluate(() => document.documentElement.classList.remove('dark'));
+  await expect(image).toHaveAttribute('src', lightSrc);
 });
 
 async function availablePort() {
@@ -77,7 +100,7 @@ test("development updates external PNGs under a nested base without browser SDK 
   const requests = [];
   page.on("request", request => requests.push(request.url()));
   try {
-    const image = page.locator('.vp-doc img[alt="TextGraph diagram"]');
+    const image = page.locator('.vp-doc img[alt="TextGraph diagram"]:visible');
     await test.step("start VitePress and render the initial diagram", async () => {
       const url = await server.ready;
       await page.goto(url + "/docs/");
@@ -119,7 +142,7 @@ for (const base of ["/", "/docs/"]) {
       const url = await server.ready;
       const page = await context.newPage();
       await page.goto(url + base);
-      const image = page.locator('.vp-doc img[alt="TextGraph diagram"]');
+      const image = page.locator('.vp-doc img[alt="TextGraph diagram"]:visible');
       await expect(image).toBeVisible();
       await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
       await expect(image).toHaveAttribute("src", new RegExp("^" + base + "assets/textgraph-[a-f0-9]{20}[.]png$"));
