@@ -4,10 +4,10 @@ import { createPngAssets } from '../src/vitepress-assets.js';
 
 test('asset URLs depend on final bytes, deduplicate output, and resolve only owned URLs', () => {
   const assets = createPngAssets({ base: '/docs/', assetsDir: 'media/diagrams' });
-  const first = { png: Buffer.from('first PNG').toString('base64') };
+  const first = { png: Buffer.from('first PNG') };
   const url = assets.add(first);
   assert.equal(assets.add(first), url);
-  const changed = assets.add({ png: Buffer.from('second PNG').toString('base64') });
+  const changed = assets.add({ png: Buffer.from('second PNG') });
   assert.notEqual(changed, url);
   assert.match(url, /^\/docs\/media\/diagrams\/textgraph-[a-f0-9]{20}\.png$/);
   const emitted = [];
@@ -20,7 +20,7 @@ test('asset URLs depend on final bytes, deduplicate output, and resolve only own
 
 test('development serves immutable PNG bytes and HEAD without claiming missing images', () => {
   const assets = createPngAssets({ base: '/docs/' });
-  const url = assets.add({ png: Buffer.from('PNG bytes').toString('base64') });
+  const url = assets.add({ png: Buffer.from('PNG bytes') });
   for (const method of ['GET', 'HEAD']) {
     const headers = {};
     let body;
@@ -41,7 +41,7 @@ test('development serves immutable PNG bytes and HEAD without claiming missing i
 
 test('browser-encoded asset directories resolve during development', () => {
   const assets = createPngAssets({ base: '/docs/', assetsDir: 'diagram images/图' });
-  const url = assets.add({ png: Buffer.from('PNG').toString('base64') });
+  const url = assets.add({ png: Buffer.from('PNG') });
   const pathname = new URL(url, 'http://localhost').pathname;
   assert.equal(pathname, url, 'generated URLs must already be safe to embed and fetch');
   let body;

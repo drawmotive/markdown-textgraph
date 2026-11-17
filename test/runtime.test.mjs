@@ -22,13 +22,13 @@ test("public SDK generates decoded nonempty PNGs in a reusable Worker", async ()
     const results = await Promise.all([renderer.renderPng("A -> B"), renderer.renderPng("A -> C")]);
     for (const result of results) {
       assert.equal(result.success, true, JSON.stringify(result.diagnostics));
-      const png = PNG.sync.read(Buffer.from(result.png, "base64"));
+      const png = PNG.sync.read(Buffer.from(result.png));
       assert.equal(png.width, result.width);
       assert.equal(png.height, result.height);
       assert.ok(png.width > 0 && png.width <= 320);
       assert.ok(new Set(png.data).size > 2);
     }
-    assert.notEqual(results[0].png, results[1].png);
+    assert.notDeepEqual(results[0].png, results[1].png);
   } finally { await renderer.dispose(); }
 });
 
@@ -43,7 +43,7 @@ test("Worker defaults match explicit scale one and preserve explicit higher dens
     assert.equal(actual.success, true);
     assert.equal(expected.success, true);
     assert.equal(dense.success, true);
-    assert.equal(actual.png, expected.png);
+    assert.deepEqual(actual.png, expected.png);
     assert.equal(dense.width, actual.width * 2);
     assert.equal(dense.height, actual.height * 2);
   } finally {
@@ -57,7 +57,7 @@ test("public SDK renders inline group targets and recovers after invalid braces"
     for (const source of ["A -> {}", "A -> {{x}}", "A -> { B -> C }"]) {
       const result = await renderer.renderPng(source);
       assert.equal(result.success, true, JSON.stringify(result.diagnostics));
-      const png = PNG.sync.read(Buffer.from(result.png, "base64"));
+      const png = PNG.sync.read(Buffer.from(result.png));
       assert.ok(png.width > 0 && new Set(png.data).size > 2);
     }
     const invalid = await renderer.renderPng("A -> {}}");
@@ -78,7 +78,7 @@ test("local SDK Worker renders scoped names and reports ambiguous root reference
         for (const source of [structure + "\n" + references, references + "\n" + structure]) {
           const result = await renderer.renderPng(source);
           assert.equal(result.success, true, JSON.stringify(result.diagnostics));
-          assert.ok(PNG.sync.read(Buffer.from(result.png, "base64")).width > 0);
+          assert.ok(PNG.sync.read(Buffer.from(result.png)).width > 0);
         }
         const ambiguous = await renderer.renderPng(structure + "\ndone: Complete");
         assert.equal(ambiguous.success, false);

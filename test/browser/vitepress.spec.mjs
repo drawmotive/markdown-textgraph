@@ -13,7 +13,7 @@ import { vitePressServerUrl } from "../support/vitepress-output.mjs";
 test("plain Markdown images fit narrow containers without distorting aspect ratio", async ({ page }) => {
   const png = new PNG({ width: 400, height: 200 });
   png.data.fill(255);
-  const figure = renderPngFigure({ png: PNG.sync.write(png).toString("base64"), width: 400, height: 200 });
+  const figure = renderPngFigure({ png: PNG.sync.write(png), width: 400, height: 200 });
   await page.setContent(`<div style="width:180px">${figure}</div>`);
   const image = page.locator("img");
   await expect(image).toBeVisible();
@@ -26,12 +26,12 @@ test("paired images select distinct native bytes through html.dark without filte
   const nativeImage = value => {
     const png = new PNG({ width: 20, height: 10 });
     png.data.fill(value);
-    return { png: PNG.sync.write(png).toString('base64'), width: 20, height: 10 };
+    return { png: PNG.sync.write(png), width: 20, height: 10 };
   };
   const light = nativeImage(255);
   const dark = nativeImage(50);
-  const lightSrc = 'data:image/png;base64,' + light.png;
-  const darkSrc = 'data:image/png;base64,' + dark.png;
+  const lightSrc = 'data:image/png;base64,' + light.png.toString('base64');
+  const darkSrc = 'data:image/png;base64,' + dark.png.toString('base64');
   await page.setContent('<style>' + appearanceStyles + '</style>' + renderPngFigure(light, { src: lightSrc, darkSrc, darkResult: dark }));
   const image = page.locator('img:visible');
   await expect(image).toHaveCount(1);

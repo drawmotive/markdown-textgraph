@@ -19,9 +19,10 @@ parentPort.on("message", message => {
       } else {
         sdk ??= initializeTextGraph({ languagePacks: decodeLanguagePacks(workerData.languagePacks) });
         result = await (await sdk).renderPng(message.source, { ...workerData.render,
-          ...(message.dark === undefined ? {} : { dark: message.dark }), encoding: "base64" });
+          ...(message.dark === undefined ? {} : { dark: message.dark }) });
       }
-      parentPort.postMessage({ id: message.id, result });
+      // The SDK hands each result its own PNG buffer, so transfer it instead of cloning.
+      parentPort.postMessage({ id: message.id, result }, result?.success ? [result.png.buffer] : []);
     } catch (error) {
       parentPort.postMessage({ id: message.id, error: serializeError(error) });
     }

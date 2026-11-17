@@ -17,7 +17,8 @@ export function createPngAssets({ base = "/", assetsDir = "assets" } = {}) {
   return {
     setBase(value) { urlBase = value; },
     add(result) {
-      const bytes = Buffer.from(result.png, "base64");
+      // Alias the transferred PNG bytes; the asset map owns them from here on.
+      const bytes = Buffer.from(result.png.buffer, result.png.byteOffset, result.png.byteLength);
       const hash = createHash("sha256").update(bytes).digest("hex").slice(0, 20);
       const file = `${directory}/textgraph-${hash}.png`;
       const previous = assets.get(file);

@@ -14,7 +14,7 @@ export function createRenderer(renderPng) {
           ? renderPng(source)
           : {
               success: true,
-              png: Buffer.from(source).toString('base64'),
+              png: Buffer.from(source),
               width: 2,
               height: 1,
               diagnostics: [],

@@ -253,7 +253,7 @@ test('throw mode reports every duplicate block before throwing the first build e
 test('reports warnings from successful renders and still emits the image', async () => {
   const warning = diagnostic({ code: 'TG_PARSE_WARNING', severity: 'warning', message: 'Deprecated syntax' });
   const reported = [];
-  const fake = createRenderer(async () => ({ success: true, png: 'cG5n', width: 4, height: 2, diagnostics: [warning] }));
+  const fake = createRenderer(async () => ({ success: true, png: Buffer.from('png'), width: 4, height: 2, diagnostics: [warning] }));
   const session = createMarkdownSession(fake.renderer, { onDiagnostic: value => reported.push(value) });
   const md = new MarkdownIt().use(session.markdownIt);
   const html = await session.render(md, fenced('A -> B'));

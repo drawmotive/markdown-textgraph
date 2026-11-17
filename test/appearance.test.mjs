@@ -10,7 +10,7 @@ test('VitePress renders and publishes independent light and dark bytes', async (
   const renderer = createThemedRenderer({
     async renderPng(source, options) {
       calls.push({ source, ...options });
-      return { success: true, png: Buffer.from(options.dark ? 'dark' : 'light').toString('base64'), width: 20, height: 10, diagnostics: [] };
+      return { success: true, png: Buffer.from(options.dark ? 'dark' : 'light'), width: 20, height: 10, diagnostics: [] };
     },
     async dispose() { disposed = true; },
   });

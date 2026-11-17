@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Keep rendered PNGs binary from the SDK through the Worker transfer and VitePress asset files; only plain Markdown data URLs encode base64. This no longer uses the SDK `encoding` option, which TextGraph protocol 2 removes.
+
 ## 0.2.2-alpha.2 — 2026-09-25
 
 - Pin TextGraph SDK 0.2.2-alpha.2 to fix mixed backward and relation connections in rendered Markdown diagrams.

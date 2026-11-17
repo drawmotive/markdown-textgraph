@@ -18,11 +18,18 @@ function renderPngImage(result, { scale, src, className = '' }) {
     '" alt="TextGraph diagram"' + width + height + '>';
 }
 
-/** A host can supply a native pair; plain Markdown keeps one self-contained image. */
-export function renderPngFigure(result, { scale = 1, src = 'data:image/png;base64,' + result.png, darkSrc, darkResult } = {}) {
+/**
+ * A host can supply a native pair; plain Markdown keeps one self-contained image.
+ * PNG bytes stay binary until this point, so base64 is paid only by inline HTML.
+ */
+export function renderPngFigure(result, { scale = 1, src = pngDataUrl(result.png), darkSrc, darkResult } = {}) {
   const light = renderPngImage(result, { scale, src, className: darkSrc ? 'textgraph-light' : '' });
   const dark = darkSrc ? renderPngImage(darkResult, { scale, src: darkSrc, className: 'textgraph-dark' }) : '';
   return '<figure v-pre class="textgraph">' + light + dark + '</figure>';
+}
+
+function pngDataUrl(png) {
+  return 'data:image/png;base64,' + Buffer.from(png.buffer, png.byteOffset, png.byteLength).toString('base64');
 }
 
 export function renderErrorFigure(source, diagnostics) {

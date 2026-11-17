@@ -5,7 +5,7 @@ import { createMarkdownSession } from '../src/markdown.js';
 import { createRenderer, deferred } from './support/renderer.mjs';
 
 test('HTML preserves logical size when raster width is clamped', async () => {
-  const fake = createRenderer(() => ({ success: true, png: 'cG5n', width: 200, height: 100,
+  const fake = createRenderer(() => ({ success: true, png: Buffer.from('png'), width: 200, height: 100,
     displayWidth: 800, displayHeight: 400, diagnostics: [] }));
   const session = createMarkdownSession(fake.renderer, { render: { scale: 2 } });
   const md = new MarkdownIt().use(session.markdownIt);
@@ -16,7 +16,7 @@ test('HTML preserves logical size when raster width is clamped', async () => {
 });
 
 test('HTML defaults to scale one when legacy SDK results omit logical dimensions', async () => {
-  const fake = createRenderer(() => ({ success: true, png: 'cG5n', width: 800, height: 400, diagnostics: [] }));
+  const fake = createRenderer(() => ({ success: true, png: Buffer.from('png'), width: 800, height: 400, diagnostics: [] }));
   const session = createMarkdownSession(fake.renderer);
   const md = new MarkdownIt().use(session.markdownIt);
   try {
@@ -115,7 +115,7 @@ test('isolates overlapping renders with different env objects', async () => {
     await gate.promise;
     return {
       success: true,
-      png: Buffer.from(source).toString('base64'),
+      png: Buffer.from(source),
       width: 1,
       height: 1,
       diagnostics: [],
@@ -141,7 +141,7 @@ test('rejects overlapping use of the same env and restores it after failures', a
   const gate = deferred();
   const fake = createRenderer(async () => {
     await gate.promise;
-    return { success: true, png: 'cG5n', width: 1, height: 1, diagnostics: [] };
+    return { success: true, png: Buffer.from('png'), width: 1, height: 1, diagnostics: [] };
   });
   const session = createMarkdownSession(fake.renderer);
   const md = new MarkdownIt().use(session.markdownIt);
@@ -227,7 +227,7 @@ test('dispose is idempotent, drains accepted work, and rejects new work', async 
   const gate = deferred();
   const fake = createRenderer(async () => {
     await gate.promise;
-    return { success: true, png: 'cG5n', width: 1, height: 1, diagnostics: [] };
+    return { success: true, png: Buffer.from('png'), width: 1, height: 1, diagnostics: [] };
   });
   const session = createMarkdownSession(fake.renderer);
   const md = new MarkdownIt().use(session.markdownIt);
@@ -250,7 +250,7 @@ test('waits for every accepted renderer job before disposal when one job fails',
   const fake = createRenderer(async source => {
     if (source === 'first\n') throw firstFailure;
     await secondGate.promise;
-    return { success: true, png: 'cG5n', width: 1, height: 1, diagnostics: [] };
+    return { success: true, png: Buffer.from('png'), width: 1, height: 1, diagnostics: [] };
   });
   const session = createMarkdownSession(fake.renderer);
   const md = new MarkdownIt().use(session.markdownIt);
