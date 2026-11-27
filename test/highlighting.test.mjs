@@ -43,17 +43,18 @@ test('TextGraph distinguishes operators, invalid arrows, labels and group bounda
       'browse: Browse Products',
     ]);
     assert.deepEqual(values(chain, 'entity.name.operator.arrow'), ['->', '<-', '<->', '--']);
+    assert.deepEqual(values(chain, 'markup.bold.operator'), ['->', '<-', '<->', '--']);
     assert.deepEqual(values(chain, 'string.unquoted.anonymous'), ['Queued item']);
     assert.deepEqual(values(group, 'punctuation.section.group.begin'), ['{']);
     assert.deepEqual(values(group, 'punctuation.section.group.end'), ['}']);
     assert.deepEqual(values(group, 'meta.label'), [' title -> shown ', ' also --> text ']);
     assert.deepEqual(values(group, 'entity.name.operator.arrow'), ['->']);
-    assert.deepEqual(values(invalid, 'invalid.illegal.arrow'), ['-->', '=>']);
+    assert.deepEqual(values(invalid, 'invalid.arrow'), ['-->', '=>']);
     assert.deepEqual(values(invalid, 'entity.name.operator.arrow'), []);
     assert.deepEqual(values(list, 'punctuation.separator.sequence'), [',']);
     assert.deepEqual(values(list, 'entity.name.type.node'), ['System.a', 'Support.b']);
     assert.deepEqual(values(invalidAnonymous, 'string.unquoted.anonymous'), []);
-    assert.deepEqual(values(invalidAnonymous, 'invalid.illegal.arrow'), ['-->']);
+    assert.deepEqual(values(invalidAnonymous, 'invalid.arrow'), ['-->']);
     assert.deepEqual(values(named, 'entity.name.type.node'), ['browse']);
     assert.deepEqual(values(named, 'meta.label'), [' Browse Products']);
   } finally { highlighter.dispose(); }

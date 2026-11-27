@@ -4,7 +4,8 @@ export const appearanceStyles = '.textgraph img.textgraph-dark{display:none}.dar
 const sourceAccents = [
   ["punctuation", "#69536e", "#c5b2ca"],
   ["entity.name.type.node", "#166546", "#91d7ad"],
-  ["entity.name.operator.arrow", "#994b00", "#ffba66"],
+  ["entity.name.operator.arrow", "#994b00", "#ffba66", "bold"],
+  ["invalid.arrow", "#c9132b", "#ff8585", "underline"],
   ["keyword.other.style", "#7439a3", "#d2a7ff"],
 ];
 
@@ -15,9 +16,9 @@ export async function registerTextGraphThemeAccents(shiki) {
     const theme = shiki.getTheme(name);
     await shiki.loadTheme({
       ...theme,
-      settings: [...theme.settings, ...sourceAccents.map(([scope, light, dark]) => ({
+      settings: [...theme.settings, ...sourceAccents.map(([scope, light, dark, fontStyle]) => ({
         scope: ["source.textgraph " + scope, "meta.embedded.block.textgraph " + scope],
-        settings: { foreground: name === "github-dark" ? dark : light },
+        settings: { foreground: name === "github-dark" ? dark : light, fontStyle },
       }))],
     });
   }

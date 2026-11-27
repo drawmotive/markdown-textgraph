@@ -204,22 +204,30 @@ async function verifySourceHighlighting(page, artifacts) {
   await retry(async () => {
     const lines = await page.locator('.monaco-editor .view-line').evaluateAll(elements => elements.map(line => ({
       text: line.textContent.replaceAll(String.fromCharCode(160), ' '),
-      parts: [...line.querySelectorAll('span > span')].map(part => ({ text: part.textContent, color: getComputedStyle(part).color })),
+      parts: [...line.querySelectorAll('span > span')].map(part => {
+        const { color, fontWeight } = getComputedStyle(part);
+        return { text: part.textContent, color, fontWeight };
+      }),
     })));
-    const colors = (lineText, tokenText) => {
+    const tokenStyle = (lineText, tokenText) => {
       const line = lines.find(candidate => candidate.text === lineText);
       assert.ok(line, 'VS Code must show the source line ' + lineText);
       const token = line.parts.find(part => part.text.includes(tokenText));
       assert.ok(token, 'VS Code must show ' + tokenText + ' on ' + lineText);
-      return token.color;
+      return token;
     };
+    const colors = (line, token) => tokenStyle(line, token).color;
     const styledEdge = 'A(fill primary) -> B';
     const arrow = colors(styledEdge, '->');
     const node = colors(styledEdge, 'A');
     const style = colors(styledEdge, 'fill');
     const displayText = colors('browse: Browse Products', 'Products');
     assert.notEqual(style, node);
-    for (const other of [node, style, displayText, colors('A --> B', '-->')]) {
+    const invalid = colors('A --> B', '-->');
+    const [red, green, blue] = invalid.match(/\d+/g).map(Number);
+    assert.ok(red > 2 * green && red > 2 * blue, 'A malformed arrow needs a vivid red foreground. Received ' + invalid);
+    assert.equal(tokenStyle(styledEdge, '->').fontWeight, '700', 'A legal arrow needs bold weight');
+    for (const other of [node, style, displayText, invalid]) {
       assert.notEqual(arrow, other, 'A legal arrow needs its own foreground color');
     }
     assert.equal(displayText, colors('browse(ordinary)', 'ordinary'));

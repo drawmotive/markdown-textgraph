@@ -91,11 +91,11 @@
     },
     {
       "match": "(?!(?:<->|<-|->|--)(?![<>=-]))(?=[<>=-]*[<>-])[<>=-]{2,}",
-      "name": "invalid.illegal.arrow.textgraph"
+      "name": "invalid.arrow.textgraph"
     },
     {
       "match": "(?:<->|<-|->|--)",
-      "name": "entity.name.operator.arrow.textgraph"
+      "name": "markup.bold.operator.textgraph entity.name.operator.arrow.textgraph"
     },
     {
       "match": "\\{",
