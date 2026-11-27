@@ -68,10 +68,11 @@ test("packed VitePress entry installs with registry SDK and builds public PNG as
   const require = createRequire(path.join(temp, "package.json"));
   await mkdir(path.join(temp, ".vitepress"));
   await writeFile(path.join(temp, ".vitepress/config.mjs"), 'import {withTextGraph} from "@drawmotive/markdown-it-textgraph/vitepress"; export default withTextGraph({});');
-  await writeFile(path.join(temp, "index.md"), "# Packed plugin\n\n~~~textgraph\nA -> B\n~~~");
+  await writeFile(path.join(temp, "index.md"), "# Packed plugin\n\n~~~textgraph\nA -> B\n~~~\n\n~~~textgraph-source\nA -> B(bold)\n~~~");
   await command([path.join(path.dirname(require.resolve("vitepress/package.json")), "bin/vitepress.js"), "build", temp], temp, "build site with packed VitePress entry");
   const html = await readFile(path.join(temp, ".vitepress/dist/index.html"), "utf8");
   assert.match(html, /src="\/assets\/textgraph-[a-f0-9]{20}\.png"/);
+  assert.match(html, /<span style="--shiki-light:[^"]+--shiki-dark:[^"]+">bold<\/span>/);
 });
 
 test("packed public types support Markdown 14 consumers with existing 14.1 typings", { timeout: 90000 }, async t => {

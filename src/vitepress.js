@@ -1,7 +1,9 @@
+import textGraphGrammar from "../vscode/syntaxes/textgraph.tmLanguage.json" with { type: "json" };
+import markdownInjection from "../vscode/syntaxes/textgraph-markdown.tmLanguage.json" with { type: "json" };
 import { createMarkdownSession, isTextGraphRenderFailure } from "./markdown.js";
 import { createWorkerRenderer } from "./worker/client.js";
 import { createPngAssets } from "./vitepress-assets.js";
-import { appearanceStyles, createThemedRenderer } from "./vitepress-appearance.js";
+import { appearanceStyles, createThemedRenderer, registerTextGraphThemeAccents } from "./vitepress-appearance.js";
 
 /** Compose host hooks without taking ownership of VitePress parsing or page transforms. */
 export function withTextGraph(config = {}, options = {}) {
@@ -30,6 +32,16 @@ export function withTextGraph(config = {}, options = {}) {
     head: [...(config.head ?? []), ['style', {}, appearanceStyles]],
     markdown: {
       ...config.markdown,
+      languages: [
+        ...(config.markdown?.languages ?? []),
+        // Shiki owns highlighted source. The textgraph fence still renders a diagram.
+        { ...textGraphGrammar, aliases: ["textgraph-source"] },
+        { ...markdownInjection, injectTo: ["text.html.markdown"] },
+      ],
+      async shikiSetup(shiki) {
+        await registerTextGraphThemeAccents(shiki);
+        await config.markdown?.shikiSetup?.(shiki);
+      },
       async config(md) {
         try {
           await config.markdown?.config?.(md);

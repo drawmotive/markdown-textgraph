@@ -36,6 +36,38 @@ test("VitePress adapter preserves user configuration and awaits existing Markdow
   assert.deepEqual(calls, ["markdown", "buildEnd"]);
 });
 
+test("VitePress highlights standalone and embedded TextGraph source with the same scopes", async () => {
+  let hostSetup = 0;
+  const config = withTextGraph({ markdown: { languages: ["javascript"], shikiSetup() { hostSetup++; } } });
+  assert.ok(config.markdown.languages.includes("javascript"));
+  const md = await createMarkdownRenderer(process.cwd(), config.markdown);
+  try {
+    assert.equal(hostSetup, 1);
+    const source = "A -> B(bold typo)\nA --> B\nB(fill)\nB(ordinary)\nA: (bold) ->";
+    const direct = await md.renderAsync("~~~textgraph-source\n" + source + "\n~~~", {});
+    const embedded = await md.renderAsync("~~~markdown\n```textgraph\n" + source + "\n```\n\n```js\nconst unrelated = 'A --> B'\n```\n~~~", {});
+    const token = (html, pattern) => html.match(new RegExp('<span style="([^"]+)">\\s*' + pattern + '</span>'))?.[1];
+    const arrow = token(direct, '-(?:&gt;|>)');
+    const invalid = token(direct, '--(?:&gt;|>)');
+    const style = token(direct, 'bold');
+    const styleLine = html => html.split('\n').find(line => line.includes('>fill</span>')) ?? '';
+    const parenthesis = token(styleLine(direct), '\\(');
+    const plain = direct.match(/<span style="([^"]+)">\(ordinary\)<\/span>/)?.[1];
+    assert.ok(plain && parenthesis && parenthesis !== plain);
+    assert.equal(token(styleLine(embedded), '\\('), parenthesis);
+    assert.match(arrow ?? '', /--shiki-light:.*--shiki-dark:/);
+    assert.ok(invalid && invalid !== arrow);
+    assert.ok(style);
+    assert.equal(token(direct, 'typo'), undefined);
+    assert.equal((direct.match(/>bold<\/span>/g) ?? []).length, 1);
+    assert.equal(token(embedded, '-(?:&gt;|>)'), arrow);
+    assert.equal(token(embedded, '--(?:&gt;|>)'), invalid);
+    assert.equal(token(embedded, 'bold'), style);
+    assert.equal((embedded.match(/>\s*--(?:&gt;|>)<\/span>/g) ?? []).length, 1);
+    assert.doesNotMatch(direct, /class="textgraph"/);
+  } finally { await config.buildEnd({}); await disposeMdItInstance(); }
+});
+
 test("command defaults are resolved after Markdown installation and successful bundles stay open", async () => {
   const config = withTextGraph({});
   const md = new MarkdownIt();

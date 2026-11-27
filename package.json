@@ -32,6 +32,7 @@
   },
   "files": [
     "src",
+    "vscode/syntaxes/*.tmLanguage.json",
     "README.md",
     "LICENSE",
     "examples"
