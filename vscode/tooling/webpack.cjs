@@ -19,6 +19,7 @@ function createWebpackConfig(root, { sdkRoot = path.join(root, 'node_modules/@dr
     node: { __dirname: false },
     plugins: [new CopyPlugin({ patterns: [
       { from: 'src/render-worker.mjs', to: 'render-worker.mjs' },
+      { from: 'syntaxes', to: 'syntaxes' },
       ...sdkPatterns,
     ] })],
   };

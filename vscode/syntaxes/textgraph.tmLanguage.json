@@ -1,0 +1,157 @@
+{
+  "name": "textgraph",
+  "scopeName": "source.textgraph",
+  "patterns": [
+    {
+      "name": "comment.block.textgraph",
+      "begin": "(?:^|\\G)[ \\t]*<!--",
+      "end": "-->.*$"
+    },
+    {
+      "contentName": "markup.raw.block.textgraph",
+      "begin": "(?:^|\\G)[ \\t]*(`{3,}).*$",
+      "end": "(?:^|\\G)[ \\t]*(`{3,}).*$",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.definition.fence.textgraph"
+        }
+      },
+      "endCaptures": {
+        "1": {
+          "name": "punctuation.definition.fence.textgraph"
+        }
+      }
+    },
+    {
+      "match": "(?:^|\\G)[ \\t]*(@textgraph)(?=[ \\t:]|$)[ \\t]*(:?)([^\\r\\n]*)$",
+      "captures": {
+        "1": {
+          "name": "keyword.control.directive.textgraph"
+        },
+        "2": {
+          "name": "punctuation.separator.label.textgraph"
+        },
+        "3": {
+          "name": "string.unquoted.label.textgraph"
+        }
+      }
+    },
+    {
+      "begin": "(?:^|\\G)[ \\t]*(@slide)(?=[ \\t(:]|$)",
+      "end": "(?=$)",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.directive.textgraph"
+        }
+      },
+      "patterns": [
+        {
+          "include": "#style-list"
+        },
+        {
+          "match": "(:)([^\\r\\n]*)",
+          "captures": {
+            "1": {
+              "name": "punctuation.separator.label.textgraph"
+            },
+            "2": {
+              "name": "string.unquoted.label.textgraph"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "match": "(:)([^{}\\r\\n]*)",
+      "captures": {
+        "1": {
+          "name": "punctuation.separator.label.textgraph"
+        },
+        "2": {
+          "name": "string.unquoted.label.textgraph"
+        }
+      }
+    },
+    {
+      "match": "(\\[)((?:(?!(?=[<>=-]*[<>-])[<>=-]{2,})[^{}\\[\\](),:\\r\\n])*)(\\]|$)",
+      "captures": {
+        "1": {
+          "name": "punctuation.section.anonymous.begin.textgraph"
+        },
+        "2": {
+          "name": "string.unquoted.anonymous.textgraph"
+        },
+        "3": {
+          "name": "punctuation.section.anonymous.end.textgraph"
+        }
+      }
+    },
+    {
+      "include": "#style-list"
+    },
+    {
+      "match": "(?!(?:<->|<-|->|--)(?![<>=-]))(?=[<>=-]*[<>-])[<>=-]{2,}",
+      "name": "invalid.illegal.arrow.textgraph"
+    },
+    {
+      "match": "(?:<->|<-|->|--)",
+      "name": "keyword.operator.arrow.textgraph"
+    },
+    {
+      "match": "\\{",
+      "name": "punctuation.section.group.begin.textgraph"
+    },
+    {
+      "match": "\\}",
+      "name": "punctuation.section.group.end.textgraph"
+    },
+    {
+      "match": "\\[",
+      "name": "punctuation.section.anonymous.begin.textgraph"
+    },
+    {
+      "match": "\\]",
+      "name": "punctuation.section.anonymous.end.textgraph"
+    },
+    {
+      "match": ",",
+      "name": "punctuation.separator.sequence.textgraph"
+    },
+    {
+      "match": "(?:(?!(?=[<>=-]*[<>-])[<>=-]{2,})[^\\s{}\\[\\](),:])+",
+      "name": "variable.other.identifier.textgraph"
+    }
+  ],
+  "repository": {
+    "style-list": {
+      "comment": "Scope the delimiters only in balanced lists whose words all appear in the parser allowlist. Keep this gate aligned with the style rule.",
+      "match": "(?:(\\()([ \\t]*(?:(?i:dark|light|rectangle|circle|ellipse|diamond|cylinder|parallelogram|triangle|hexagon|stadium|capsule|star|cloud|document|callout|rounded|no-rounded|primary|secondary|info|success|warning|danger|background|foreground|fill|no-fill|border|no-border|solid|dashed|dotted|normal|bold|thick|clear|vertical|horizontal|layout-2col|layout-2-col|layout-3col|layout-3-col|layout-4col|layout-4-col|layout-6col|layout-6-col|label-head|label-tail|justify-start|justify-center|justify-end|justify-between|justify-around|justify-evenly|align-start|align-center|align-end|overlay-center|overlay-top-left|overlay-top-center|overlay-top-right|overlay-center-left|overlay-center-right|overlay-bottom-left|overlay-bottom-center|overlay-bottom-right|overlay-cover|loop|alt|opt|par|notes|hidden|title|autonumber|mindmap|sequence|diagram|rect|decision|db|database|io|pill|doc)(?=[ \\t)])[ \\t]*)+)(\\))|\\(([ \\t\\p{L}\\p{N}_-]*)(?:\\)|$)|\\([^(){}\\r\\n]*(?:\\)|$))",
+      "captures": {
+        "1": {
+          "name": "punctuation.section.style.begin.textgraph"
+        },
+        "2": {
+          "patterns": [
+            {
+              "include": "#style"
+            }
+          ]
+        },
+        "3": {
+          "name": "punctuation.section.style.end.textgraph"
+        },
+        "4": {
+          "patterns": [
+            {
+              "include": "#style"
+            }
+          ]
+        }
+      }
+    },
+    "style": {
+      "match": "(?<![^\\s(])(?i:dark|light|rectangle|circle|ellipse|diamond|cylinder|parallelogram|triangle|hexagon|stadium|capsule|star|cloud|document|callout|rounded|no-rounded|primary|secondary|info|success|warning|danger|background|foreground|fill|no-fill|border|no-border|solid|dashed|dotted|normal|bold|thick|clear|vertical|horizontal|layout-2col|layout-2-col|layout-3col|layout-3-col|layout-4col|layout-4-col|layout-6col|layout-6-col|label-head|label-tail|justify-start|justify-center|justify-end|justify-between|justify-around|justify-evenly|align-start|align-center|align-end|overlay-center|overlay-top-left|overlay-top-center|overlay-top-right|overlay-center-left|overlay-center-right|overlay-bottom-left|overlay-bottom-center|overlay-bottom-right|overlay-cover|loop|alt|opt|par|notes|hidden|title|autonumber|mindmap|sequence|diagram|rect|decision|db|database|io|pill|doc)(?=[\\s)]|$)",
+      "name": "keyword.other.style.textgraph"
+    }
+  }
+}

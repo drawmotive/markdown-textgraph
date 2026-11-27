@@ -54,6 +54,19 @@
     "markdown.markdownItPlugins": true,
     "markdown.previewStyles": [
       "media/preview.css"
+    ],
+    "grammars": [
+      {
+        "scopeName": "source.textgraph",
+        "path": "./dist/syntaxes/textgraph.tmLanguage.json"
+      },
+      {
+        "scopeName": "markdown.textgraph.codeblock",
+        "path": "./dist/syntaxes/textgraph-markdown.tmLanguage.json",
+        "injectTo": [
+          "text.html.markdown"
+        ]
+      }
     ]
   },
   "scripts": {

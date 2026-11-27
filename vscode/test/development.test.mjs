@@ -87,7 +87,7 @@ test('development selection confines output to .local and rejects runtime traver
 test('development VSIX contains selected local SDK, runtime and fonts and worker needs no selection environment', async t => {
   const f = await fixture(t);
   validate(f.component, f.env);
-  for (const file of ['src', 'tooling', 'package.json', 'package-lock.json', 'README.md', 'CHANGELOG.md', 'LICENSE', '.vscodeignore', 'media']) {
+  for (const file of ['src', 'syntaxes', 'tooling', 'package.json', 'package-lock.json', 'README.md', 'CHANGELOG.md', 'LICENSE', '.vscodeignore', 'media']) {
     await cp(path.join(root, file), path.join(f.component, file), { recursive: true });
   }
   for (const name of await readdir(path.join(root, 'node_modules'))) {
@@ -105,7 +105,14 @@ test('development VSIX contains selected local SDK, runtime and fonts and worker
   assert.deepEqual(entries.get(`${prefix}generated/wasm/test.ttf`), Buffer.from('local test.ttf'));
   assert.equal(JSON.parse(entries.get(`${prefix}generated/wasm-manifest.json`)).privateSource.development, true);
   assert.match(entries.get(`${prefix}src/node.js`).toString(), /localSource/);
-  assert.equal(JSON.parse(entries.get('extension/package.json')).private, true);
+  const packaged = JSON.parse(entries.get('extension/package.json'));
+  assert.equal(packaged.private, true);
+  assert.deepEqual(packaged.contributes.grammars, pkg.contributes.grammars);
+  for (const grammar of pkg.contributes.grammars) {
+    const source = grammar.path.replace('./dist/', './');
+    const bytes = entries.get('extension/' + grammar.path.slice(2));
+    assert.ok(bytes?.equals(await readFile(path.join(root, source))), 'The VSIX must contain the current grammar at ' + grammar.path);
+  }
   assert.equal(entries.has('extension/media/removed.png'), false);
   const readme = entries.get('extension/readme.md').toString();
   const repository = 'https://github.com/drawmotive/markdown-textgraph';

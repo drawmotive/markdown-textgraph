@@ -154,6 +154,8 @@ exports.run = async function run() {
     preview = await findPreview(browser);
     preview = await waitFor(preview, expectedTrust ? imagesReady : () => document.querySelectorAll('.textgraph-preview[data-state="untrusted"]').length === 2, 'preview reopen lifecycle', 90000);
     evidence.checks.push('closing and reopening Markdown Preview remains functional');
+    await verifySourceHighlighting(preview.page(), artifacts);
+    evidence.checks.push('recognized styles and valid and invalid TextGraph arrows are colored in Markdown source');
     await fs.writeFile(path.join(artifacts, 'result.json'), JSON.stringify(evidence, null, 2));
     console.log('Verified installed VSIX: ' + JSON.stringify(evidence));
   } catch (error) {
@@ -181,6 +183,40 @@ async function verifyOrdinaryMarkdown(frame) {
     const image = document.querySelector('img[alt="Ordinary local image"]');
     return image?.complete && image.naturalWidth > 0;
   }, 'normal Markdown local image');
+}
+
+async function verifySourceHighlighting(page, artifacts) {
+  const content = [
+    '# Before the diagram --> prose',
+    '',
+    '```textgraph',
+    'A(fill primary) -> B',
+    'A --> B',
+    '<!-- Unclosed TextGraph comment',
+    '```',
+    '',
+    '# After the diagram --> prose',
+  ].join('\n');
+  const source = await vscode.workspace.openTextDocument({ language: 'markdown', content });
+  await vscode.window.showTextDocument(source, vscode.ViewColumn.One);
+  await retry(async () => {
+    const lines = await page.locator('.monaco-editor .view-line').evaluateAll(elements => elements.map(line => ({
+      text: line.textContent.replaceAll(String.fromCharCode(160), ' '),
+      parts: [...line.querySelectorAll('span > span')].map(part => ({ text: part.textContent, color: getComputedStyle(part).color })),
+    })));
+    const colors = (lineText, tokenText) => {
+      const line = lines.find(candidate => candidate.text === lineText);
+      assert.ok(line, 'VS Code must show the source line ' + lineText);
+      const token = line.parts.find(part => part.text.includes(tokenText));
+      assert.ok(token, 'VS Code must show ' + tokenText + ' on ' + lineText);
+      return token.color;
+    };
+    assert.notEqual(colors('A(fill primary) -> B', 'fill'), colors('A(fill primary) -> B', 'A'));
+    assert.notEqual(colors('A(fill primary) -> B', '->'), colors('A --> B', '-->'));
+    assert.equal(colors('# Before the diagram --> prose', 'prose'), colors('# After the diagram --> prose', 'prose'));
+  }, 30000, 'TextGraph source tokenization in the installed VSIX');
+  await vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups');
+  await page.screenshot({ path: path.join(artifacts, 'markdown-source-highlighting.png') });
 }
 
 async function getImages(frame) {
