@@ -34,25 +34,28 @@ test('TextGraph distinguishes operators, invalid arrows, labels and group bounda
   const highlighter = await createHighlighter({ langs: [source], themes: [] });
   try {
     const grammar = highlighter.getInternalContext().getLanguage('textgraph');
-    const [chain, group, invalid, list, invalidAnonymous] = tokenize(grammar, [
+    const [chain, group, invalid, list, invalidAnonymous, named] = tokenize(grammar, [
       'A->B<-C<->D--[Queued item]',
       'G: title -> shown { Group.node -> End : also --> text }',
       'A --> B => C',
       'System.a, Support.b',
       'A -> [word --> other]',
+      'browse: Browse Products',
     ]);
     assert.deepEqual(values(chain, 'keyword.operator.arrow'), ['->', '<-', '<->', '--']);
     assert.deepEqual(values(chain, 'string.unquoted.anonymous'), ['Queued item']);
     assert.deepEqual(values(group, 'punctuation.section.group.begin'), ['{']);
     assert.deepEqual(values(group, 'punctuation.section.group.end'), ['}']);
-    assert.deepEqual(values(group, 'string.unquoted.label'), [' title -> shown ', ' also --> text ']);
+    assert.deepEqual(values(group, 'meta.label'), [' title -> shown ', ' also --> text ']);
     assert.deepEqual(values(group, 'keyword.operator.arrow'), ['->']);
     assert.deepEqual(values(invalid, 'invalid.illegal.arrow'), ['-->', '=>']);
     assert.deepEqual(values(invalid, 'keyword.operator.arrow'), []);
     assert.deepEqual(values(list, 'punctuation.separator.sequence'), [',']);
-    assert.deepEqual(values(list, 'variable.other.identifier'), ['System.a', 'Support.b']);
+    assert.deepEqual(values(list, 'entity.name.type.node'), ['System.a', 'Support.b']);
     assert.deepEqual(values(invalidAnonymous, 'string.unquoted.anonymous'), []);
     assert.deepEqual(values(invalidAnonymous, 'invalid.illegal.arrow'), ['-->']);
+    assert.deepEqual(values(named, 'entity.name.type.node'), ['browse']);
+    assert.deepEqual(values(named, 'meta.label'), [' Browse Products']);
   } finally { highlighter.dispose(); }
 });
 
@@ -75,7 +78,7 @@ test('TextGraph scopes recognized style words in incomplete and mixed lists', as
     assert.deepEqual(values(incomplete, 'punctuation.section.style.begin'), []);
     assert.deepEqual(values(prose, 'keyword.other.style'), []);
     assert.deepEqual(values(prose, 'punctuation.section.style.begin'), []);
-    assert.deepEqual(values(prose, 'variable.other.identifier'), ['C']);
+    assert.deepEqual(values(prose, 'entity.name.type.node'), ['C']);
     assert.deepEqual(values(ordinary, 'keyword.other.style'), []);
     assert.deepEqual(values(standalone, 'keyword.other.style'), ['horizontal', 'bold']);
     assert.deepEqual(values(standalone, 'punctuation.section.style.begin'), ['(']);
@@ -93,7 +96,7 @@ test('TextGraph keeps directives and opaque multiline content distinct from stru
       '```md', 'A -> B', '```', 'C -> D',
     ]);
     assert.deepEqual(values(header, 'keyword.control.directive'), ['@textgraph']);
-    assert.deepEqual(values(title, 'string.unquoted.label'), ['Plan -> Publish']);
+    assert.deepEqual(values(title, 'meta.label'), ['Plan -> Publish']);
     assert.deepEqual(values(title, 'keyword.operator.arrow'), []);
     assert.deepEqual(values(slide, 'keyword.control.directive'), ['@slide']);
     assert.deepEqual(values(standaloneSlide, 'keyword.control.directive'), ['@slide']);

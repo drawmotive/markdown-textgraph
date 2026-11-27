@@ -192,6 +192,8 @@ async function verifySourceHighlighting(page, artifacts) {
     '```textgraph',
     'A(fill primary) -> B',
     'A --> B',
+    'browse: Browse Products',
+    'browse(ordinary)',
     '<!-- Unclosed TextGraph comment',
     '```',
     '',
@@ -213,6 +215,9 @@ async function verifySourceHighlighting(page, artifacts) {
     };
     assert.notEqual(colors('A(fill primary) -> B', 'fill'), colors('A(fill primary) -> B', 'A'));
     assert.notEqual(colors('A(fill primary) -> B', '->'), colors('A --> B', '-->'));
+    const displayText = colors('browse: Browse Products', 'Products');
+    assert.equal(displayText, colors('browse(ordinary)', 'ordinary'));
+    assert.notEqual(displayText, colors('browse: Browse Products', 'browse'));
     assert.equal(colors('# Before the diagram --> prose', 'prose'), colors('# After the diagram --> prose', 'prose'));
   }, 30000, 'TextGraph source tokenization in the installed VSIX');
   await vscode.commands.executeCommand('workbench.action.closeEditorsInOtherGroups');

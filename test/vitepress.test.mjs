@@ -43,7 +43,7 @@ test("VitePress highlights standalone and embedded TextGraph source with the sam
   const md = await createMarkdownRenderer(process.cwd(), config.markdown);
   try {
     assert.equal(hostSetup, 1);
-    const source = "A -> B(bold typo)\nA --> B\nB(fill)\nB(ordinary)\nA: (bold) ->";
+    const source = "A -> B(bold typo)\nA --> B\nB(fill)\nB(ordinary)\nA: (bold) ->\nbrowse: Browse Products";
     const direct = await md.renderAsync("~~~textgraph-source\n" + source + "\n~~~", {});
     const embedded = await md.renderAsync("~~~textgraph-markdown\n```textgraph\n" + source + "\n```\n\n```js\nconst unrelated = 'A --> B'\n```\n~~~\n\n~~~typescript\nconst lazy: boolean = true\n~~~", {});
     const token = (html, pattern) => html.match(new RegExp('<span style="([^"]+)">\\s*' + pattern + '</span>'))?.[1];
@@ -54,6 +54,11 @@ test("VitePress highlights standalone and embedded TextGraph source with the sam
     const parenthesis = token(styleLine(direct), '\\(');
     const plain = direct.match(/<span style="([^"]+)">\(ordinary\)<\/span>/)?.[1];
     assert.ok(plain && parenthesis && parenthesis !== plain);
+    const identifier = token(direct, 'browse');
+    assert.ok(identifier && identifier !== plain);
+    assert.equal(token(direct, 'Browse Products'), plain);
+    assert.equal(token(embedded, 'browse'), identifier);
+    assert.equal(token(embedded, 'Browse Products'), plain);
     assert.equal(token(styleLine(embedded), '\\('), parenthesis);
     assert.match(arrow ?? '', /--shiki-light:.*--shiki-dark:/);
     assert.ok(invalid && invalid !== arrow);

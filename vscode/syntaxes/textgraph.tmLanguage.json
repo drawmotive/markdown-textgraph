@@ -32,7 +32,7 @@
           "name": "punctuation.separator.label.textgraph"
         },
         "3": {
-          "name": "string.unquoted.label.textgraph"
+          "name": "meta.label.textgraph"
         }
       }
     },
@@ -55,7 +55,7 @@
               "name": "punctuation.separator.label.textgraph"
             },
             "2": {
-              "name": "string.unquoted.label.textgraph"
+              "name": "meta.label.textgraph"
             }
           }
         }
@@ -68,7 +68,7 @@
           "name": "punctuation.separator.label.textgraph"
         },
         "2": {
-          "name": "string.unquoted.label.textgraph"
+          "name": "meta.label.textgraph"
         }
       }
     },
@@ -119,7 +119,7 @@
     },
     {
       "match": "(?:(?!(?=[<>=-]*[<>-])[<>=-]{2,})[^\\s{}\\[\\](),:])+",
-      "name": "variable.other.identifier.textgraph"
+      "name": "entity.name.type.node.textgraph"
     }
   ],
   "repository": {

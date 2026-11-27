@@ -3,7 +3,7 @@ export const appearanceStyles = '.textgraph img.textgraph-dark{display:none}.dar
 
 const sourceAccents = [
   ["punctuation", "#69536e", "#c5b2ca"],
-  ["variable.other.identifier", "#324863", "#bacde7"],
+  ["entity.name.type.node", "#166546", "#91d7ad"],
   ["keyword.operator.arrow", "#1158a8", "#8cc3ff"],
   ["keyword.other.style", "#7439a3", "#d2a7ff"],
 ];
