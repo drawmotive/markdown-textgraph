@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.5
+
+- Use the public TextGraph SDK 0.3.5.
+- Support TextGraph fenced-block highlighting for VitePress integrations.
+
 ## Unreleased
 
 - Keep rendered PNGs binary from the SDK through the Worker transfer and VitePress asset files; only plain Markdown data URLs encode base64. This no longer uses the SDK `encoding` option, which TextGraph protocol 2 removes.

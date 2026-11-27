@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.5
+
+- Bundle the TextGraph SDK 0.3.5 for local Markdown Preview rendering and diagnostics.
+- Highlight TextGraph fences, including named nodes and connection operators.
+
 ## 0.2.1
 
 - Bundle public TextGraph SDK 0.2.1 with scale-one PNG defaults and logical display dimensions.
