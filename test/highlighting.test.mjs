@@ -42,14 +42,14 @@ test('TextGraph distinguishes operators, invalid arrows, labels and group bounda
       'A -> [word --> other]',
       'browse: Browse Products',
     ]);
-    assert.deepEqual(values(chain, 'keyword.operator.arrow'), ['->', '<-', '<->', '--']);
+    assert.deepEqual(values(chain, 'entity.name.operator.arrow'), ['->', '<-', '<->', '--']);
     assert.deepEqual(values(chain, 'string.unquoted.anonymous'), ['Queued item']);
     assert.deepEqual(values(group, 'punctuation.section.group.begin'), ['{']);
     assert.deepEqual(values(group, 'punctuation.section.group.end'), ['}']);
     assert.deepEqual(values(group, 'meta.label'), [' title -> shown ', ' also --> text ']);
-    assert.deepEqual(values(group, 'keyword.operator.arrow'), ['->']);
+    assert.deepEqual(values(group, 'entity.name.operator.arrow'), ['->']);
     assert.deepEqual(values(invalid, 'invalid.illegal.arrow'), ['-->', '=>']);
-    assert.deepEqual(values(invalid, 'keyword.operator.arrow'), []);
+    assert.deepEqual(values(invalid, 'entity.name.operator.arrow'), []);
     assert.deepEqual(values(list, 'punctuation.separator.sequence'), [',']);
     assert.deepEqual(values(list, 'entity.name.type.node'), ['System.a', 'Support.b']);
     assert.deepEqual(values(invalidAnonymous, 'string.unquoted.anonymous'), []);
@@ -97,18 +97,18 @@ test('TextGraph keeps directives and opaque multiline content distinct from stru
     ]);
     assert.deepEqual(values(header, 'keyword.control.directive'), ['@textgraph']);
     assert.deepEqual(values(title, 'meta.label'), ['Plan -> Publish']);
-    assert.deepEqual(values(title, 'keyword.operator.arrow'), []);
+    assert.deepEqual(values(title, 'entity.name.operator.arrow'), []);
     assert.deepEqual(values(slide, 'keyword.control.directive'), ['@slide']);
     assert.deepEqual(values(standaloneSlide, 'keyword.control.directive'), ['@slide']);
     assert.deepEqual(values(slide, 'keyword.other.style'), ['bold']);
     for (const line of [commentStart, commentBody, commentEnd]) {
       assert.ok(values(line, 'comment.block').length > 0);
-      assert.deepEqual(values(line, 'keyword.operator.arrow'), []);
+      assert.deepEqual(values(line, 'entity.name.operator.arrow'), []);
     }
     assert.ok(values(fence, 'punctuation.definition.fence').length > 0);
     assert.deepEqual(values(raw, 'markup.raw.block'), ['A -> B']);
     assert.ok(values(fenceEnd, 'punctuation.definition.fence').length > 0);
-    assert.deepEqual(values(edge, 'keyword.operator.arrow'), ['->']);
+    assert.deepEqual(values(edge, 'entity.name.operator.arrow'), ['->']);
   } finally { highlighter.dispose(); }
 });
 
@@ -134,7 +134,7 @@ test('Markdown scopes only TextGraph fences and resumes Markdown at the matching
       '', '> ```textgraph', '> <!-- hide', '> A -> B', '> -->', '> C -> D', '> ```', '> E -> F',
       '', '- List', '  ~~~textgraph', '  K -> L', '  ~~~', '  M -> N',
     ]);
-    assert.deepEqual(lines.flatMap((line, index) => values(line, 'keyword.operator.arrow').length ? [index] : []), [17, 21, 25, 34, 40]);
+    assert.deepEqual(lines.flatMap((line, index) => values(line, 'entity.name.operator.arrow').length ? [index] : []), [17, 21, 25, 34, 40]);
     assert.deepEqual(values(lines[19], 'markup.raw.block'), ['C -> D']);
     assert.ok(lines[26].some(token => token.scopes.includes(scope('comment.block'))));
     for (const index of [0, 3, 5, 9, 13, 22, 23, 27, 28]) {

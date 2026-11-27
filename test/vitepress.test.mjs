@@ -60,7 +60,7 @@ test("VitePress highlights standalone and embedded TextGraph source with the sam
     assert.equal(token(embedded, 'browse'), identifier);
     assert.equal(token(embedded, 'Browse Products'), plain);
     assert.equal(token(styleLine(embedded), '\\('), parenthesis);
-    assert.match(arrow ?? '', /--shiki-light:.*--shiki-dark:/);
+    assert.match(arrow ?? '', /--shiki-light:#994b00;--shiki-dark:#ffba66/i);
     assert.ok(invalid && invalid !== arrow);
     assert.ok(style);
     assert.equal(token(direct, 'typo'), undefined);

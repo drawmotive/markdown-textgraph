@@ -95,7 +95,7 @@
     },
     {
       "match": "(?:<->|<-|->|--)",
-      "name": "keyword.operator.arrow.textgraph"
+      "name": "entity.name.operator.arrow.textgraph"
     },
     {
       "match": "\\{",

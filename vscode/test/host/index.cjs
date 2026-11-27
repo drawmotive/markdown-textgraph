@@ -213,9 +213,15 @@ async function verifySourceHighlighting(page, artifacts) {
       assert.ok(token, 'VS Code must show ' + tokenText + ' on ' + lineText);
       return token.color;
     };
-    assert.notEqual(colors('A(fill primary) -> B', 'fill'), colors('A(fill primary) -> B', 'A'));
-    assert.notEqual(colors('A(fill primary) -> B', '->'), colors('A --> B', '-->'));
+    const styledEdge = 'A(fill primary) -> B';
+    const arrow = colors(styledEdge, '->');
+    const node = colors(styledEdge, 'A');
+    const style = colors(styledEdge, 'fill');
     const displayText = colors('browse: Browse Products', 'Products');
+    assert.notEqual(style, node);
+    for (const other of [node, style, displayText, colors('A --> B', '-->')]) {
+      assert.notEqual(arrow, other, 'A legal arrow needs its own foreground color');
+    }
     assert.equal(displayText, colors('browse(ordinary)', 'ordinary'));
     assert.notEqual(displayText, colors('browse: Browse Products', 'browse'));
     assert.equal(colors('# Before the diagram --> prose', 'prose'), colors('# After the diagram --> prose', 'prose'));
