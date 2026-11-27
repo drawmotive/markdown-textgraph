@@ -110,7 +110,7 @@ The adapter preserves existing Markdown hooks, includes, asynchronous highlighti
 
 The example can run with `npx vitepress dev examples/vitepress` or `npx vitepress build examples/vitepress`. VitePress serves independent PNGs during development and writes them to its build assets directory. URLs respect the configured `base` and `assetsDir`; no browser runtime or manually managed image directory is needed.
 
-Use a `textgraph-source` fence to show highlighted TextGraph source. A `textgraph` fence creates a diagram. In `markdown` code samples, nested `textgraph` fences use the same highlighting rules.
+Use a `textgraph-source` fence to show highlighted TextGraph source. A `textgraph` fence creates a diagram. Use `textgraph-markdown` to show a Markdown example with its enclosing `textgraph` fence.
 
 VitePress renders native light and dark PNGs for every diagram. The selected VitePress appearance chooses the matching image through its `html.dark` class, including before hydration. Both variants use content-hashed URLs; image colors are never changed by a CSS filter. Plain markdown-it renders one PNG, light by default. Set `render: { dark: true }` to produce a native dark image.
 

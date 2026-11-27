@@ -36,7 +36,8 @@ export function withTextGraph(config = {}, options = {}) {
         ...(config.markdown?.languages ?? []),
         // Shiki owns highlighted source. The textgraph fence still renders a diagram.
         { ...textGraphGrammar, aliases: ["textgraph-source"] },
-        { ...markdownInjection, injectTo: ["text.html.markdown"] },
+        // Run the fence rules directly. Lazy Shiki loads can rebuild Markdown and drop injected grammars.
+        { name: "textgraph-markdown", scopeName: markdownInjection.scopeName, patterns: markdownInjection.patterns },
       ],
       async shikiSetup(shiki) {
         await registerTextGraphThemeAccents(shiki);

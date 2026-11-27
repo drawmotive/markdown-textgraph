@@ -45,7 +45,7 @@ test("VitePress highlights standalone and embedded TextGraph source with the sam
     assert.equal(hostSetup, 1);
     const source = "A -> B(bold typo)\nA --> B\nB(fill)\nB(ordinary)\nA: (bold) ->";
     const direct = await md.renderAsync("~~~textgraph-source\n" + source + "\n~~~", {});
-    const embedded = await md.renderAsync("~~~markdown\n```textgraph\n" + source + "\n```\n\n```js\nconst unrelated = 'A --> B'\n```\n~~~", {});
+    const embedded = await md.renderAsync("~~~textgraph-markdown\n```textgraph\n" + source + "\n```\n\n```js\nconst unrelated = 'A --> B'\n```\n~~~\n\n~~~typescript\nconst lazy: boolean = true\n~~~", {});
     const token = (html, pattern) => html.match(new RegExp('<span style="([^"]+)">\\s*' + pattern + '</span>'))?.[1];
     const arrow = token(direct, '-(?:&gt;|>)');
     const invalid = token(direct, '--(?:&gt;|>)');
