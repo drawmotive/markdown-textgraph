@@ -1,6 +1,6 @@
 {
   "name": "@drawmotive/markdown-it-textgraph",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/",
@@ -46,7 +46,7 @@
     "test:release": "node --test --test-concurrency=1 test/npm-release.test.mjs"
   },
   "dependencies": {
-    "@drawmotive/textgraph": "0.3.4"
+    "@drawmotive/textgraph": "0.3.5"
   },
   "peerDependencies": {
     "markdown-it": "^14.1.0 || ^15.0.2",
