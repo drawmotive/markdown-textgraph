@@ -8,9 +8,9 @@ import { fileURLToPath } from 'node:url';
 import { downloadAndUnzipVSCode, resolveCliArgsFromVSCodeExecutablePath } from '@vscode/test-electron';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const version = process.env.VSCODE_VERSION || '1.101.0';
 const capture = process.argv.includes('--capture');
 const manifest = JSON.parse(await readFile(path.join(root, 'package.json'), 'utf8'));
+const version = process.env.VSCODE_VERSION || manifest.engines.vscode.slice(1);
 const vsix = process.env.TEXTGRAPH_VSIX || path.join(root, `${manifest.name}-${manifest.version}.vsix`);
 const artifactRoot = process.env.TEXTGRAPH_HOST_ARTIFACTS || await mkdtemp(path.join(os.tmpdir(), 'textgraph-vsix-host-'));
 await mkdir(artifactRoot, { recursive: true });

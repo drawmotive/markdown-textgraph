@@ -62,7 +62,7 @@ connection endpoints refer to existing objects without changing containment.
 
 [Example with repeated node names](examples/repeated-names.textgraph)
 
-Renders locally, without an account or API key. Requires VS Code 1.101 or newer and a trusted workspace; the first preview takes a few seconds to initialize.
+Renders locally, without an account or API key. Requires VS Code 1.105 or newer and a trusted workspace. The first preview takes a few seconds to initialize.
 
 Want to move shapes and edit on a canvas? Try the downloadable editable example in [DrawMotive for VS Code](https://github.com/drawmotive/vscode-drawmotive). This Markdown extension previews TextGraph; it does not transfer a source block into the visual editor.
 

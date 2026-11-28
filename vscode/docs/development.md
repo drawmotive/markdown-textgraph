@@ -24,15 +24,12 @@ Capture uses ordinary development-host mode and a 1600 × 1400 isolated window
 so the complete overview fits beside its source. Normal host tests keep their
 test runner; the launcher requires the capture driver's canonical-source result.
 
-The host launcher downloads desktop VS Code 1.101.0 by default. For offline use,
+The host launcher downloads the desktop version declared as the minimum in the extension manifest. For offline use,
 VSCODE_EXECUTABLE selects an existing desktop executable. TEXTGRAPH_VSIX selects
 an existing package. Linux captures always use isolated Xvfb; ordinary host tests
 also use it when DISPLAY is absent. Capture evidence next to
 the PNG records host version, dimensions and source/pixel hashes. Visually inspect
 readability and host surroundings; missing prerequisites must fail the operation.
-For interrupted Linux x64 downloads, the parent operation
-`npm run docs:capture -- vscode:prepare` resumes and checksum-verifies the pinned
-archive. Use its printed VSCODE_EXECUTABLE path for either extension.
 
 ## Public description assets
 
@@ -47,13 +44,13 @@ is published.
 
 ## Requirements
 
-- VS Code **1.101.0 or newer**, desktop or a Node-based remote Extension Host. VS Code 1.101 introduced Node 22 in both desktop and remote hosts. A browser-only host such as vscode.dev without a remote host is unsupported.
+- VS Code **1.105.0 or newer**, desktop or a Node-based remote Extension Host. The TextGraph runtime requires WebAssembly exception references. VS Code 1.105 supplies Node.js 22.19.0 in remote hosts, where this feature is enabled by default. A browser-only host such as vscode.dev without a remote host is unsupported.
 - A **trusted workspace** to render. Restricted Mode displays escaped source with a trust notice and does not start the renderer.
 
 | Layer | Supported environment | Verification boundary |
 | --- | --- | --- |
 | Contributor build and VSIX packaging | Node.js 22; npm 10 on Linux, Windows and macOS | CI targets all three systems with Node 22 |
-| Installed extension | VS Code 1.101+ desktop or Node-based remote Extension Host | VS Code supplies its own Node runtime; a separate Node/npm install is not required |
+| Installed extension | VS Code 1.105+ desktop or Node-based remote Extension Host | VS Code supplies its own Node runtime. No separate Node/npm install is required. |
 | Markdown preview | VS Code's built-in preview webview | Host tests target the real Extension Host; this is not a Chromium/Firefox/WebKit browser product |
 
 The 2026-10-01 standalone audit ran Linux Node 22.23.2/npm 10.9.8 unit tests.
@@ -107,7 +104,7 @@ npm run package
 npm run test:host
 ```
 
-The host test downloads VS Code 1.101.0, installs the actual VSIX into isolated profiles, and tests built-in Markdown Preview through the real Extension Host and webview. Linux CI uses `xvfb-run -a npm run test:host`; a desktop display also works. Set `VSCODE_VERSION=stable` for the current stable host. No C# project is built.
+The host test downloads the minimum supported VS Code version, installs the actual VSIX into isolated profiles, and tests built-in Markdown Preview through the real Extension Host and webview. Linux CI uses `xvfb-run -a npm run test:host`. A desktop display also works. Set `VSCODE_VERSION=stable` for the current stable host. No C# project is built.
 
 These commands create a local VSIX without publishing. `npm run release:check`
 and publication commands retain coordinated release eligibility checks, which

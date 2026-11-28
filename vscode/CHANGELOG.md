@@ -3,6 +3,7 @@
 ## 0.3.5
 
 - Bundle the TextGraph SDK 0.3.5 for local Markdown Preview rendering and diagnostics.
+- Require VS Code 1.105 or newer for the bundled WebAssembly runtime.
 - Highlight TextGraph fences, including named nodes and connection operators.
 
 ## 0.2.1

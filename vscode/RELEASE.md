@@ -32,7 +32,7 @@ If publisher access is unavailable, deliver the tested VSIX and checksum; do not
 - [VS Code 1.101 renderer](https://github.com/microsoft/vscode/blob/1.101.0/extensions/markdown-language-features/src/markdownEngine.ts): synchronous `engine.renderer.render`; `env.currentDocument` identifies ownership.
 - [Refresh command](https://github.com/microsoft/vscode/blob/1.101.0/extensions/markdown-language-features/src/commands/refreshPreview.ts): `markdown.preview.refresh` clears the host cache and refreshes previews.
 - [Preview CSP](https://github.com/microsoft/vscode/blob/1.101.0/extensions/markdown-language-features/src/preview/documentRenderer.ts): strict mode permits PNG `data:` images, without arbitrary browser Worker/SDK execution.
-- [VS Code 1.101 release notes](https://code.visualstudio.com/updates/v1_101): Node 22.15.1, Electron 35, and Node 22 in remote hosts establish the minimum for SDK `node >=22`.
+- [VS Code 1.105 remote runtime pin](https://github.com/microsoft/vscode/blob/1.105.0/remote/.npmrc) uses Node.js 22.19.0, which enables the WebAssembly exception references required by TextGraph.
 
 The existing async markdown-it/VitePress adapter awaits diagrams. This synchronous adapter returns placeholders/cache results and refreshes after completion; the adapters intentionally own different lifecycles.
 
