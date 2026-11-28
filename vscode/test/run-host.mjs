@@ -43,6 +43,7 @@ for (const mode of modes) {
     'window.restoreWindows': 'none',
     'window.titleBarStyle': 'custom', 'window.newWindowDimensions': 'maximized',
     'workbench.statusBar.visible': true, 'workbench.activityBar.location': 'default',
+    '[markdown]': { 'editor.wordWrap': 'off' },
     'extensions.autoUpdate': false,
     'extensions.autoCheckUpdates': false,
     'telemetry.telemetryLevel': 'off',
